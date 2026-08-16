@@ -1,0 +1,48 @@
+## OS Files
+.DS_Store
+Thumbs.db
+
+## Environment & Secrets
+.env
+*.env
+!.env.example
+appsettings.Development.json
+appsettings.Production.json
+
+## .NET / Visual Studio / Rider
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+*.DotSettings.user
+
+## Flutter & Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+clients/mobile/build/
+clients/mobile/.dart_tool/
+clients/mobile/ios/Flutter/Flutter.podspec
+clients/mobile/ios/Pods/
+clients/mobile/ios/.symlinks/
+clients/mobile/android/.gradle/
+clients/mobile/android/captures/
+clients/mobile/android/local.properties
+
+## Docker
+docker-compose.override.yml
+
+## macOS Specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
