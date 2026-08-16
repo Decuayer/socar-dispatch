@@ -8,6 +8,10 @@ public class Team
     public string TeamName { get; set; } = string.Empty;
     public string Status { get; set; } = "Idle"; // Idle, Forwarded, OnScene, Busy
     
+    // Team Leader (The main user publishing their location)
+    public Guid? LeaderId { get; set; }
+    public User? Leader { get; set; }
+
     // PostGIS Spatial Point (SRID 4326 - WGS84 GPS Coordinates)
     public Point? Location { get; set; }
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

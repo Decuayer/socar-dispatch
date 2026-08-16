@@ -15,6 +15,7 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation Properties
+    public ICollection<Team> LedTeams { get; set; } = new List<Team>(); // Teams he has led
     public ICollection<TeamMember> TeamMemberships { get; set; } = new List<TeamMember>();
     public ICollection<Incident> ReportedIncidents { get; set; } = new List<Incident>();
     public ICollection<Assignment> AssignedDispatches { get; set; } = new List<Assignment>();

@@ -19,5 +19,11 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
         builder.HasIndex(t => t.Location).HasMethod("GIST");
 
         builder.Property(t => t.UpdatedAt).HasDefaultValueSql("NOW()");
+
+        // Team Leader (User -> Teams 1-to-Many optional relationship)
+        builder.HasOne(t => t.Leader)
+            .WithMany(u => u.LedTeams)
+            .HasForeignKey(t => t.LeaderId)
+            .OnDelete(DeleteBehavior.SetNull); // If the leader is deleted, the team is not deleted; the leader position becomes vacant.
     }
 }
