@@ -1,0 +1,6 @@
+@SocarDispatch.API_HostAddress = http://localhost:5233
+
+GET {{SocarDispatch.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
