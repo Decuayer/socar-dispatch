@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SocarDispatch.API/SocarDispatch.API.csproj" />
+    <Project Path="src/SocarDispatch.Application/SocarDispatch.Application.csproj" />
+    <Project Path="src/SocarDispatch.Domain/SocarDispatch.Domain.csproj" />
+    <Project Path="src/SocarDispatch.Infrastructure/SocarDispatch.Infrastructure.csproj" />
+  </Folder>
+</Solution>
