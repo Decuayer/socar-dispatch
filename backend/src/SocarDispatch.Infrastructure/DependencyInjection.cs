@@ -11,7 +11,9 @@ public static class DependencyInjection
         this IServiceCollection services, 
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection") 
+            ?? configuration["DB_CONNECTION_STRING"]
+            ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString, o => o.UseNetTopologySuite()));
