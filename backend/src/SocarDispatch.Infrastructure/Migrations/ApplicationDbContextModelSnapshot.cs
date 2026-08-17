@@ -209,10 +209,9 @@ namespace SocarDispatch.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("RoleType")
-                        .IsRequired()
+                    b.Property<int>("RoleType")
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("integer");
 
                     b.Property<string>("SubRole")
                         .HasMaxLength(50)

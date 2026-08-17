@@ -13,7 +13,7 @@ using SocarDispatch.Infrastructure.Persistence;
 namespace SocarDispatch.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260816221631_InitialCreate")]
+    [Migration("20260817121029_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -212,10 +212,9 @@ namespace SocarDispatch.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("RoleType")
-                        .IsRequired()
+                    b.Property<int>("RoleType")
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("integer");
 
                     b.Property<string>("SubRole")
                         .HasMaxLength(50)
