@@ -1,10 +1,11 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Domain.Entities;
 
 namespace SocarDispatch.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
