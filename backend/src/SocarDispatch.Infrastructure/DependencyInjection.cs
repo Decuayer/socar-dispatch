@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SocarDispatch.Application.Common.Interfaces;
+using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Infrastructure.Persistence;
 using SocarDispatch.Infrastructure.Services;
 
