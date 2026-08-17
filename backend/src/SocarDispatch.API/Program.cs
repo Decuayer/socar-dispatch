@@ -1,4 +1,6 @@
 using dotenv.net;
+using SocarDispatch.API.Middlewares;
+using SocarDispatch.Application;
 using SocarDispatch.Infrastructure;
 
 // Read the .env file in the parent directory and load it into Environment
@@ -12,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 // Infrastructure and DbContext registration
+builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
@@ -20,6 +23,9 @@ builder.Services.AddSwaggerGen();
 
 
 var app = builder.Build();
+
+// Global Exception Handler Middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
