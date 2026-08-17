@@ -27,7 +27,7 @@ namespace SocarDispatch.Infrastructure.Migrations
                     Phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Department = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    RoleType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    RoleType = table.Column<int>(type: "integer", maxLength: 20, nullable: false),
                     SubRole = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     AvatarUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")

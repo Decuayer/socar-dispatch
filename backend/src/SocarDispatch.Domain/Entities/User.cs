@@ -1,3 +1,5 @@
+using SocarDispatch.Domain.Enums;
+
 namespace SocarDispatch.Domain.Entities;
 
 public class User
@@ -9,7 +11,7 @@ public class User
     public string Phone { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string Department { get; set; } = string.Empty;
-    public string RoleType { get; set; } = string.Empty; // Employee, Team, Operator
+    public RoleType RoleType { get; set; } // Employee, Team, Operator
     public string? SubRole { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

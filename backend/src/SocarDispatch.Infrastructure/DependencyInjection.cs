@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SocarDispatch.Application.Common.Interfaces;
+using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Infrastructure.Persistence;
+using SocarDispatch.Infrastructure.Services;
 
 namespace SocarDispatch.Infrastructure;
 
@@ -21,6 +23,10 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider => 
             provider.GetRequiredService<ApplicationDbContext>());
+
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
         return services;
     }

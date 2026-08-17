@@ -4,5 +4,5 @@ namespace SocarDispatch.Application.Common.Interfaces;
 
 public interface IJwtTokenGenerator
 {
-    string GenerateToken(User user);
+    (string Token, DateTime ExpiresAt) GenerateToken(User user);
 }
