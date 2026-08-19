@@ -6,6 +6,7 @@
     <Project Path="src/SocarDispatch.Infrastructure/SocarDispatch.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SocarDispatch.Application.Tests/SocarDispatch.Application.Tests.csproj" />
     <Project Path="tests/SocarDispatch.Infrastructure.Tests/SocarDispatch.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

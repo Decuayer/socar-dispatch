@@ -100,6 +100,32 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+// Seed Default Teams if database has no teams
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<SocarDispatch.Infrastructure.Persistence.ApplicationDbContext>();
+    if (!context.Teams.Any())
+    {
+        context.Teams.AddRange(
+            new SocarDispatch.Domain.Entities.Team
+            {
+                Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                TeamName = "A Blok İSG ve İtfaiye Ekibi",
+                Status = "Idle"
+            },
+            new SocarDispatch.Domain.Entities.Team
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                TeamName = "B Blok Kurtarma ve İlk Yardım Ekibi",
+                Status = "Idle"
+            }
+        );
+        context.SaveChanges();
+    }
+}
+
+
 app.MapControllers();
 
 app.Run();
