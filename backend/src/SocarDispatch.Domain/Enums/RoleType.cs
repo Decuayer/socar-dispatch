@@ -2,7 +2,7 @@ namespace SocarDispatch.Domain.Enums;
 
 public enum RoleType
 {
-    Employee,
-    Team,
-    Operator
+    Employee = 0,
+    Team = 1,
+    Operator = 2
 }

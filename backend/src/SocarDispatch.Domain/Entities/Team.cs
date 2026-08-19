@@ -11,6 +11,8 @@ public class Team
     // Team Leader (The main user publishing their location)
     public Guid? LeaderId { get; set; }
     public User? Leader { get; set; }
+    public decimal? CurrentLatitude { get; set; }
+    public decimal? CurrentLongitude { get; set; }
 
     // PostGIS Spatial Point (SRID 4326 - WGS84 GPS Coordinates)
     public Point? Location { get; set; }

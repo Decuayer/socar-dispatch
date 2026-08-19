@@ -2,8 +2,8 @@ namespace SocarDispatch.Domain.Enums;
 
 public enum IncidentStatus
 {
-    Open,
-    Assigned,
-    Resolved,
-    Canceled
+    Open = 0,
+    Assigned = 1,
+    Resolved = 2,
+    Canceled = 3
 }
