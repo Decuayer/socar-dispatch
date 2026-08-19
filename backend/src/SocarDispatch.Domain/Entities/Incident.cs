@@ -12,7 +12,9 @@ public class Incident
     public string EmergencyCode { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? MediaUrl { get; set; }
-    public string Status { get; set; } = "Open"; // Open, Assigned, Resolved, Canceled
+    public string Status { get; set; } = "Open"; // Open, Assigned, Resolved, Canceled    
+    public decimal? CurrentLatitude { get; set; }
+    public decimal? CurrentLongitude { get; set; }
     
     // PostGIS Spatial Point (SRID 4326)
     public Point Location { get; set; } = null!;

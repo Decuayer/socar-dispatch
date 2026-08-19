@@ -2,7 +2,7 @@ namespace SocarDispatch.Domain.Enums;
 
 public enum EmergencyCode
 {
-    Red,
-    Yellow,
-    Green
+    Red = 0,
+    Yellow = 1,
+    Green = 2
 }

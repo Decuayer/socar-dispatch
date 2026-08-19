@@ -12,8 +12,10 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
 
         builder.HasKey(t => t.Id);
         builder.Property(t => t.TeamName).HasMaxLength(100).IsRequired();
-        builder.Property(t => t.Status).HasMaxLength(20).HasDefaultValue("Idle").IsRequired();
-        
+
+        builder.Property(t => t.CurrentLatitude).HasPrecision(9, 6);
+        builder.Property(t => t.CurrentLongitude).HasPrecision(9, 6);
+
         // PostGIS Geometry Point (WGS84 - SRID 4326) and GiST Spatial Index
         builder.Property(t => t.Location).HasColumnType("geometry(Point, 4326)");
         builder.HasIndex(t => t.Location).HasMethod("GIST");
