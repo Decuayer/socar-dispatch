@@ -5,4 +5,7 @@
     <Project Path="src/SocarDispatch.Domain/SocarDispatch.Domain.csproj" />
     <Project Path="src/SocarDispatch.Infrastructure/SocarDispatch.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SocarDispatch.Infrastructure.Tests/SocarDispatch.Infrastructure.Tests.csproj" />
+  </Folder>
 </Solution>

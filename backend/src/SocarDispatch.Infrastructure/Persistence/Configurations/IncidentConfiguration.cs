@@ -17,8 +17,8 @@ public class IncidentConfiguration : IEntityTypeConfiguration<Incident>
         builder.Property(i => i.MediaUrl).HasMaxLength(500);
         builder.Property(i => i.Status).HasMaxLength(20).HasDefaultValue("Open").IsRequired();
 
-        builder.Property(t => t.CurrentLatitude).HasPrecision(9, 6);
-        builder.Property(t => t.CurrentLongitude).HasPrecision(9, 6);
+        builder.Property(t => t.Latitude).HasPrecision(9, 6);
+        builder.Property(t => t.Longitude).HasPrecision(9, 6);
 
         // PostGIS Geometry Point and GiST Spatial Index
         builder.Property(i => i.Location).HasColumnType("geometry(Point, 4326)").IsRequired();
