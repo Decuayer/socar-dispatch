@@ -13,8 +13,8 @@ public class Incident
     public string? Description { get; set; }
     public string? MediaUrl { get; set; }
     public string Status { get; set; } = "Open"; // Open, Assigned, Resolved, Canceled    
-    public decimal? Latitude { get; set; }
-    public decimal? Longitude { get; set; }
+    public decimal Latitude { get; set; }
+    public decimal Longitude { get; set; }
     
     // PostGIS Spatial Point (SRID 4326)
     public Point? Location { get; set; } = null!;
