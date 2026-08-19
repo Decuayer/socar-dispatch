@@ -1,10 +1,15 @@
 using System.Security.Claims;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Auth.DTOs;
+using SocarDispatch.Application.Features.Users.Commands.UpdateUserProfile;
+using SocarDispatch.Application.Features.Users.DTOs;
+using SocarDispatch.Application.Features.Users.Queries.GetUsers;
+using SocarDispatch.Domain.Enums;
 using SocarDispatch.Domain.Exceptions;
 
 namespace SocarDispatch.API.Controllers;
@@ -14,18 +19,22 @@ namespace SocarDispatch.API.Controllers;
 [Authorize]
 public class UsersController : ControllerBase
 {
+    private readonly ISender _sender;
     private readonly IApplicationDbContext _context;
 
-    public UsersController(IApplicationDbContext context)
+    public UsersController(ISender sender, IApplicationDbContext context)
     {
+        _sender = sender;
         _context = context;
     }
 
+
+    // GET /api/v1/users/me
+    // Retrieves the profile information of the logged-in user.
     [HttpGet("me")]
     public async Task<ActionResult<ApiResponse<UserDto>>> GetCurrentUser()
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) 
-            ?? User.FindFirstValue("sub");
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {
@@ -57,6 +66,46 @@ public class UsersController : ControllerBase
         return Ok(ApiResponse<UserDto>.SuccessResult(userDto, "User information successfully retrieved."));
     }
 
+    // PUT /api/v1/users/me
+    // Updates the logged-in user's profile information and avatar.
+    [HttpPut("me")]
+    public async Task<ActionResult<ApiResponse<UserDto>>> UpdateProfile([FromBody] UpdateUserProfileRequestDto request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new DomainException("Invalid user session.");
+        }
+
+        var command = new UpdateUserProfileCommand(
+            userId,
+            request.FirstName,
+            request.LastName,
+            request.Phone,
+            request.Department,
+            request.SubRole,
+            request.AvatarUrl
+        );
+
+        var result = await _sender.Send(command);
+        return Ok(result);
+    }
+
+    // GET /api/v1/users
+    // Retrieves the contact/department list for all users (Search/Quick Contact Directory).
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<List<UserDto>>>> GetUsers(
+        [FromQuery] string? search,
+        [FromQuery] string? department,
+        [FromQuery] RoleType? roleType)
+    {
+        var query = new GetUsersQuery(search, department, roleType);
+        var result = await _sender.Send(query);
+        return Ok(result);
+    }
+
+    // Test endpoint: Accessible only by users with the Operator role.
     [HttpGet("admin-only-test")]
     [Authorize(Roles = "Operator")]
     public ActionResult<ApiResponse<string>> OperatorOnlyEndpoint()
