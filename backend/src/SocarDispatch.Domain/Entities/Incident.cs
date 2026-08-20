@@ -22,4 +22,5 @@ public class Incident
 
     // Navigation Properties
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+    public ICollection<IncidentReport> Reports { get; set; } = new List<IncidentReport>();
 }
