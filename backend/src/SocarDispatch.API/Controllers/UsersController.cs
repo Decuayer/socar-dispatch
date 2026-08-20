@@ -11,6 +11,7 @@ using SocarDispatch.Application.Features.Users.DTOs;
 using SocarDispatch.Application.Features.Users.Queries.GetUsers;
 using SocarDispatch.Domain.Enums;
 using SocarDispatch.Domain.Exceptions;
+using SocarDispatch.Application.Features.Users.Commands.UpdateDeviceToken;
 
 namespace SocarDispatch.API.Controllers;
 
@@ -88,6 +89,21 @@ public class UsersController : ControllerBase
             request.AvatarUrl
         );
 
+        var result = await _sender.Send(command);
+        return Ok(result);
+    }
+
+    // POST /api/v1/users/me/device-token
+    // Registers or updates the logged-in user's FCM device token for push notifications.
+    [HttpPost("me/device-token")]
+    public async Task<ActionResult<ApiResponse<string>>> UpdateDeviceToken([FromBody] UpdateDeviceTokenRequestDto request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new DomainException("Invalid user session.");
+        }
+        var command = new UpdateDeviceTokenCommand(userId, request.Token);
         var result = await _sender.Send(command);
         return Ok(result);
     }

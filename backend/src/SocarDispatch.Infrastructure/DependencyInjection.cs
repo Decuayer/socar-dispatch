@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Infrastructure.Persistence;
 using SocarDispatch.Infrastructure.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace SocarDispatch.Infrastructure;
 
@@ -26,6 +28,26 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+
+        // Firebase Admin Initialization & Push Notification Service Registration
+        var credPath = configuration["Firebase:CredentialsPath"] ?? Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_PATH");
+        if (!string.IsNullOrEmpty(credPath) && File.Exists(credPath))
+        {
+            if (FirebaseApp.DefaultInstance == null)
+            {
+                FirebaseApp.Create(new AppOptions
+                {
+                    Credential = GoogleCredential.FromFile(credPath)
+                });
+            }
+        }
+        services.AddSingleton<IPushNotificationService, FirebasePushNotificationService>();
+
+        // Register MediatR notification handlers from Infrastructure assembly
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+        });
 
         return services;
     }

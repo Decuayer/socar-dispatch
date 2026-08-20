@@ -8,6 +8,8 @@ Thumbs.db
 !.env.example
 appsettings.Development.json
 appsettings.Production.json
+/backend/secrets/
+secrets/
 
 ## .NET / Visual Studio / Rider
 bin/

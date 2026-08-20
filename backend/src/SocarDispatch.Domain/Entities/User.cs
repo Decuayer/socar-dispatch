@@ -14,6 +14,8 @@ public class User
     public RoleType RoleType { get; set; } // Employee, Team, Operator
     public string? SubRole { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? DeviceToken { get; set; }
+    public DateTime? DeviceTokenUpdatedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation Properties

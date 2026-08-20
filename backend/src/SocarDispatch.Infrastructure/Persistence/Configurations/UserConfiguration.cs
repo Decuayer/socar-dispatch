@@ -22,6 +22,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.RoleType).HasMaxLength(20).IsRequired();
         builder.Property(u => u.SubRole).HasMaxLength(50);
         builder.Property(u => u.AvatarUrl).HasMaxLength(500);
+        builder.Property(u => u.DeviceToken).HasMaxLength(500);
+        builder.Property(u => u.DeviceTokenUpdatedAt);
         builder.Property(u => u.CreatedAt).HasDefaultValueSql("NOW()");
     }
 }
