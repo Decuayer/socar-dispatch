@@ -8,6 +8,9 @@ using SocarDispatch.Domain.Enums;
 using SocarDispatch.Domain.Exceptions;
 using SocarDispatch.Infrastructure.Persistence;
 using Xunit;
+using MediatR;
+using Moq;
+using SocarDispatch.Domain.Events;
 
 namespace SocarDispatch.Application.Tests;
 
@@ -77,7 +80,8 @@ public class AssignmentAndStatusLogicTests
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
 
-        var handler = new CreateAssignmentCommandHandler(context);
+        var publisherMock = new Mock<IPublisher>();
+        var handler = new CreateAssignmentCommandHandler(context, publisherMock.Object);
         var command = new CreateAssignmentCommand(incident.Id, team.Id, operatorUser.Id);
 
         // Act (Operator Team Dispatches to the Incident)
@@ -104,7 +108,8 @@ public class AssignmentAndStatusLogicTests
     {
         // Arrange
         using var context = CreateInMemoryDbContext();
-        var handler = new CreateAssignmentCommandHandler(context);
+        var publisherMock = new Mock<IPublisher>();
+        var handler = new CreateAssignmentCommandHandler(context, publisherMock.Object);
         var command = new CreateAssignmentCommand(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
 
         // Act & Assert
@@ -169,4 +174,71 @@ public class AssignmentAndStatusLogicTests
         var updatedIncident = await context.Incidents.FindAsync(incident.Id);
         updatedIncident!.Status.Should().Be("Resolved");
     }
+
+    [Fact]
+    public async Task CreateAssignment_WhenTeamAlreadyHasActiveAssignment_ShouldThrowDomainException()
+    {
+        // Arrange
+        using var context = CreateInMemoryDbContext();
+        var publisherMock = new Mock<IPublisher>();
+
+        var operatorUser = new User { FirstName = "Op", LastName = "User", Email = "op@socar.com", Phone = "+905000000001", PasswordHash = "p", Department = "D", RoleType = RoleType.Operator };
+        var reporter = new User { FirstName = "Rep", LastName = "User", Email = "rep@socar.com", Phone = "+905000000002", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
+        context.Users.AddRange(operatorUser, reporter);
+
+        var team = new Team { TeamName = "Alpha Team", Status = "Forwarded" };
+        context.Teams.Add(team);
+
+        var activeIncident = new Incident { ReporterId = reporter.Id, Category = "Gas", EmergencyCode = "Yellow", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Assigned" };
+        var newIncident = new Incident { ReporterId = reporter.Id, Category = "Fire", EmergencyCode = "Red", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Open" };
+        context.Incidents.AddRange(activeIncident, newIncident);
+        await context.SaveChangesAsync();
+
+        context.Assignments.Add(new Assignment { IncidentId = activeIncident.Id, TeamId = team.Id, OperatorId = operatorUser.Id, AssignedAt = DateTime.UtcNow });
+        await context.SaveChangesAsync();
+
+        var handler = new CreateAssignmentCommandHandler(context, publisherMock.Object);
+        var command = new CreateAssignmentCommand(newIncident.Id, team.Id, operatorUser.Id);
+
+        // Act & Assert (Aktif ataması olan ekibe tekrar atama yapılamamalı)
+        var act = async () => await handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("The selected team is already assigned to an active incident.");
+    }
+
+    [Fact]
+    public async Task CreateAssignment_WhenPreviousAssignmentIsResolved_ShouldSucceed()
+    {
+        // Arrange
+        using var context = CreateInMemoryDbContext();
+        var publisherMock = new Mock<IPublisher>();
+
+        var operatorUser = new User { FirstName = "Op", LastName = "User", Email = "op2@socar.com", Phone = "+905000000003", PasswordHash = "p", Department = "D", RoleType = RoleType.Operator };
+        var reporter = new User { FirstName = "Rep", LastName = "User", Email = "rep2@socar.com", Phone = "+905000000004", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
+        context.Users.AddRange(operatorUser, reporter);
+
+        var team = new Team { TeamName = "Beta Team", Status = "Idle" };
+        context.Teams.Add(team);
+
+        // Önceki olay çözülmüş (Resolved)
+        var resolvedIncident = new Incident { ReporterId = reporter.Id, Category = "Gas", EmergencyCode = "Yellow", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Resolved" };
+        var newIncident = new Incident { ReporterId = reporter.Id, Category = "Fire", EmergencyCode = "Red", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Open" };
+        context.Incidents.AddRange(resolvedIncident, newIncident);
+        await context.SaveChangesAsync();
+
+        context.Assignments.Add(new Assignment { IncidentId = resolvedIncident.Id, TeamId = team.Id, OperatorId = operatorUser.Id, AssignedAt = DateTime.UtcNow.AddHours(-1) });
+        await context.SaveChangesAsync();
+
+        var handler = new CreateAssignmentCommandHandler(context, publisherMock.Object);
+        var command = new CreateAssignmentCommand(newIncident.Id, team.Id, operatorUser.Id);
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert (Çözülmüş olayın ataması engellememeli)
+        result.Should().NotBeNull();
+        result.Data.Should().NotBeNull();
+        publisherMock.Verify(p => p.Publish(It.IsAny<AssignmentCreatedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
 }

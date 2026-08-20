@@ -4,6 +4,8 @@ using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Assignments.DTOs;
 using SocarDispatch.Domain.Entities;
+using SocarDispatch.Domain.Enums;
+using SocarDispatch.Domain.Events;
 using SocarDispatch.Domain.Exceptions;
 
 namespace SocarDispatch.Application.Features.Assignments.Commands.CreateAssignment;
@@ -11,10 +13,12 @@ namespace SocarDispatch.Application.Features.Assignments.Commands.CreateAssignme
 public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCommand, ApiResponse<AssignmentDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IPublisher _publisher;
 
-    public CreateAssignmentCommandHandler(IApplicationDbContext context)
+    public CreateAssignmentCommandHandler(IApplicationDbContext context, IPublisher publisher)
     {
         _context = context;
+        _publisher = publisher;
     }
 
     public async Task<ApiResponse<AssignmentDto>> Handle(CreateAssignmentCommand request, CancellationToken cancellationToken)
@@ -37,6 +41,20 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
             throw new EntityNotFoundException("Operator", request.OperatorId);
         }
 
+        // Active assignment validation
+        var hasActiveAssignment = await _context.Assignments
+            .Include(a => a.Incident)
+            .AnyAsync(a => a.TeamId == request.TeamId &&
+                           a.CompletedAt == null &&
+                           a.Incident.Status != IncidentStatus.Resolved.ToString() &&
+                           a.Incident.Status != IncidentStatus.Canceled.ToString(),
+                       cancellationToken);
+
+        if (hasActiveAssignment)
+        {
+            throw new DomainException("The selected team is already assigned to an active incident.");
+        }
+
         // 1. Create an assignment record
         var assignment = new Assignment
         {
@@ -49,11 +67,20 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
         _context.Assignments.Add(assignment);
 
         // 2nd Business Rule: Set the event status to 'Assigned' and the team status to 'Forwarded'.
-        incident.Status = "Assigned";
-        team.Status = "Forwarded";
+        incident.Status = IncidentStatus.Assigned.ToString();
+        team.Status = TeamStatus.Forwarded.ToString();
         team.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        // 3. Publish AssignmentCreatedEvent for downstream workflows (SDDC-16)
+        await _publisher.Publish(new AssignmentCreatedEvent(
+            assignment.Id,
+            assignment.IncidentId,
+            assignment.TeamId,
+            assignment.OperatorId,
+            assignment.AssignedAt
+        ), cancellationToken);
 
         var dto = new AssignmentDto
         {

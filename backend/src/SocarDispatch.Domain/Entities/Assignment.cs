@@ -14,4 +14,6 @@ public class Assignment
     public User Operator { get; set; } = null!;
 
     public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? CompletedAt { get; set; }
 }
