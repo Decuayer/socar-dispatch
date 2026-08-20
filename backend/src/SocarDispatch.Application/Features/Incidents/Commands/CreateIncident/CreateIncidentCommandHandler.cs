@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
@@ -8,15 +9,15 @@ using SocarDispatch.Domain.Exceptions;
 
 namespace SocarDispatch.Application.Features.Incidents.Commands.CreateIncident;
 
-
-
 public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentCommand, ApiResponse<IncidentDto>>
 {
     private readonly IApplicationDbContext _context;
+
     public CreateIncidentCommandHandler(IApplicationDbContext context)
     {
         _context = context;
     }
+
     public async Task<ApiResponse<IncidentDto>> Handle(CreateIncidentCommand request, CancellationToken cancellationToken)
     {
         var reporter = await _context.Users.FindAsync(new object[] { request.ReporterId }, cancellationToken);
@@ -24,6 +25,15 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
         {
             throw new EntityNotFoundException("User", request.ReporterId);
         }
+
+        // EmergencyCode validation check against DB
+        var codeExists = await _context.EmergencyCodes
+            .AnyAsync(c => c.Code == request.EmergencyCode && c.IsActive, cancellationToken);
+        if (!codeExists)
+        {
+            throw new DomainException($"Invalid emergency code: '{request.EmergencyCode}'");
+        }
+
         var incident = new Incident
         {
             ReporterId = request.ReporterId,
@@ -42,8 +52,10 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
                 CreatedAt = DateTime.UtcNow
             }).ToList()
         };
+
         _context.Incidents.Add(incident);
         await _context.SaveChangesAsync(cancellationToken);
+
         var dto = new IncidentDto
         {
             Id = incident.Id,
@@ -64,6 +76,7 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
                 CreatedAt = m.CreatedAt
             }).ToList()
         };
+
         return ApiResponse<IncidentDto>.SuccessResult(dto, "Incident successfully reported.");
     }
 }
