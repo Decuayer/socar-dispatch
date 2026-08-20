@@ -11,7 +11,7 @@ public class Incident
     public string Category { get; set; } = string.Empty;
     public string EmergencyCode { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? MediaUrl { get; set; }
+    public ICollection<IncidentMedia> MediaAttachments { get; set; } = new List<IncidentMedia>();
     public string Status { get; set; } = "Open"; // Open, Assigned, Resolved, Canceled    
     public decimal Latitude { get; set; }
     public decimal Longitude { get; set; }

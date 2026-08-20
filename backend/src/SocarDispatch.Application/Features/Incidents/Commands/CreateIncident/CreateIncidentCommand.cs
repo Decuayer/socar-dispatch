@@ -9,7 +9,7 @@ public record CreateIncidentCommand(
     string Category,
     string EmergencyCode,
     string? Description,
-    string? MediaUrl,
+    List<CreateIncidentMediaRequestDto> MediaAttachments,
     decimal Latitude,
     decimal Longitude
 ) : IRequest<ApiResponse<IncidentDto>>;

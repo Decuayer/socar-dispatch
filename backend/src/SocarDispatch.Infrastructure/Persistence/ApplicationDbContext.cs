@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
     public DbSet<Incident> Incidents => Set<Incident>();
     public DbSet<Assignment> Assignments => Set<Assignment>();
+    public DbSet<IncidentMedia> IncidentMedia => Set<IncidentMedia>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

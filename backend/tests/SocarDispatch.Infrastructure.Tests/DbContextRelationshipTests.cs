@@ -60,4 +60,41 @@ public class DbContextRelationshipTests
         updatedTeam!.LeaderId.Should().BeNull(); // SetNull completed
     }
 
+    // 3. CASCADE DELETE TEST (IncidentMedia records are deleted when Incident is deleted)
+    [Fact]
+    public async Task DeleteIncident_ShouldCascadeDelete_IncidentMedia()
+    {
+        // Arrange
+        using var context = TestDbContextFactory.Create();
+        var reporter = new User { FirstName = "Mehmet", LastName = "Saha", Email = "m.saha@socar.com", Phone = "+905001119988", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
+        context.Users.Add(reporter);
+        await context.SaveChangesAsync();
+
+        var incident = new Incident
+        {
+            ReporterId = reporter.Id,
+            Category = "Yangın",
+            EmergencyCode = "Kırmızı Kod",
+            Latitude = 40.99m,
+            Longitude = 29.02m,
+            Location = new NetTopologySuite.Geometries.Point(29.02, 40.99) { SRID = 4326 },
+            MediaAttachments = new List<IncidentMedia>
+            {
+                new IncidentMedia { MediaUrl = "http://minio/fire1.jpg", MediaType = MediaType.Photo },
+                new IncidentMedia { MediaUrl = "http://minio/fire2.mp4", MediaType = MediaType.Video }
+            }
+        };
+
+
+        context.Incidents.Add(incident);
+        await context.SaveChangesAsync();
+
+        // Act (Delete Incident)
+        context.Incidents.Remove(incident);
+        await context.SaveChangesAsync();
+
+        // Assert
+        var mediaExists = await context.IncidentMedia.AnyAsync(m => m.IncidentId == incident.Id);
+        mediaExists.Should().BeFalse(); // Cascade Delete verified
+    }
 }

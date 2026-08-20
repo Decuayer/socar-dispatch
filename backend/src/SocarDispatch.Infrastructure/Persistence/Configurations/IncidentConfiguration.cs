@@ -14,7 +14,6 @@ public class IncidentConfiguration : IEntityTypeConfiguration<Incident>
         builder.Property(i => i.Category).HasMaxLength(50).IsRequired();
         builder.Property(i => i.EmergencyCode).HasMaxLength(20).IsRequired();
         builder.Property(i => i.Description).HasColumnType("text");
-        builder.Property(i => i.MediaUrl).HasMaxLength(500);
         builder.Property(i => i.Status).HasMaxLength(20).HasDefaultValue("Open").IsRequired();
 
         builder.Property(t => t.Latitude).HasPrecision(9, 6);

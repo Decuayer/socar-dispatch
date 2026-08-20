@@ -20,7 +20,7 @@ public class CoordinateValidationTests
             Category: "Yangın",
             EmergencyCode: "Kırmızı Kod",
             Description: "A Blok yangın",
-            MediaUrl: null,
+            MediaAttachments: new(),
             Latitude: 40.991234m,
             Longitude: 29.023456m
         );
@@ -62,7 +62,7 @@ public class CoordinateValidationTests
             Category: "Gaz Sızıntısı",
             EmergencyCode: "Sarı Kod",
             Description: "Tesis gaz kokusu",
-            MediaUrl: null,
+            MediaAttachments: new(),
             Latitude: invalidLatitude, // Invalid Latitude
             Longitude: 29.0m
         );
