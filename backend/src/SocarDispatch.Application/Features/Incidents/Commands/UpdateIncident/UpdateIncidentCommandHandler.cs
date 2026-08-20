@@ -6,7 +6,7 @@ using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Incidents.DTOs;
 using SocarDispatch.Domain.Exceptions;
 using SocarDispatch.Domain.Entities;
-
+using SocarDispatch.Domain.Enums;
 
 namespace SocarDispatch.Application.Features.Incidents.Commands.UpdateIncident;
 
@@ -30,6 +30,13 @@ public class UpdateIncidentCommandHandler : IRequestHandler<UpdateIncidentComman
         if (incident == null)
         {
             throw new EntityNotFoundException("Incident", request.Id);
+        }
+
+        // Authorization / Ownership Check (Reporter or Operator)
+        var requester = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.RequesterId, cancellationToken);
+        if (incident.ReporterId != request.RequesterId && requester?.RoleType != RoleType.Operator)
+        {
+            throw new ForbiddenAccessException("You do not have permission to update this incident.");
         }
 
         incident.Category = request.Category;
