@@ -46,7 +46,7 @@ public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, ApiRe
             Id = Guid.NewGuid(),
             TeamName = request.TeamName,
             LeaderId = request.LeaderId,
-            Status = TeamStatus.Idle.ToString(),
+            Status = TeamStatus.Idle,
             UpdatedAt = DateTime.UtcNow
         };
 
@@ -78,7 +78,7 @@ public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, ApiRe
         {
             Id = t.Id,
             TeamName = t.TeamName,
-            Status = t.Status,
+            Status = t.Status.ToString(),
             LeaderId = t.LeaderId,
             LeaderFullName = t.Leader != null ? $"{t.Leader.FirstName} {t.Leader.LastName}".Trim() : null,
             CurrentLatitude = t.CurrentLatitude,

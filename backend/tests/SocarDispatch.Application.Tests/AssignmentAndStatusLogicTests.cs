@@ -62,7 +62,7 @@ public class AssignmentAndStatusLogicTests
         var team = new Team
         {
             TeamName = "A Blok İSG Ekibi",
-            Status = "Idle"
+            Status = TeamStatus.Idle
         };
         context.Teams.Add(team);
 
@@ -74,7 +74,7 @@ public class AssignmentAndStatusLogicTests
             Latitude = 40.99m,
             Longitude = 29.02m,
             Location = new NetTopologySuite.Geometries.Point(29.02, 40.99) { SRID = 4326 },
-            Status = "Open"
+            Status = IncidentStatus.Open
         };
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
@@ -93,10 +93,10 @@ public class AssignmentAndStatusLogicTests
 
         // Veritabanı Durum Kontrolleri
         var updatedIncident = await context.Incidents.FindAsync(incident.Id);
-        updatedIncident!.Status.Should().Be("Assigned");
+        updatedIncident!.Status.Should().Be(IncidentStatus.Assigned);
 
         var updatedTeam = await context.Teams.FindAsync(team.Id);
-        updatedTeam!.Status.Should().Be("Forwarded");
+        updatedTeam!.Status.Should().Be(TeamStatus.Forwarded);
 
         var assignmentExists = await context.Assignments.AnyAsync(a => a.IncidentId == incident.Id && a.TeamId == team.Id);
         assignmentExists.Should().BeTrue();
@@ -133,7 +133,7 @@ public class AssignmentAndStatusLogicTests
             RoleType = RoleType.Operator
         };
         context.Users.Add(operatorUser);
-        var team = new Team { TeamName = "Kurtarma Ekibi", Status = "Forwarded" };
+        var team = new Team { TeamName = "Kurtarma Ekibi", Status = TeamStatus.Forwarded };
         context.Teams.Add(team);
         await context.SaveChangesAsync();
         var handler = new UpdateTeamStatusCommandHandler(context);
@@ -145,7 +145,7 @@ public class AssignmentAndStatusLogicTests
         // Assert
         result.Data.Status.Should().Be("OnScene");
         var updatedTeam = await context.Teams.FindAsync(team.Id);
-        updatedTeam!.Status.Should().Be("OnScene");
+        updatedTeam!.Status.Should().Be(TeamStatus.OnScene);
     }
 
     // 3. SDDC-38: INCIDENT RESOLUTION -> TEAM RELEASED TO IDLE & COMPLETED_AT POPULATED & EVENT PUBLISHED
@@ -160,7 +160,7 @@ public class AssignmentAndStatusLogicTests
         var reporter = new User { FirstName = "Ali", LastName = "Veli", Email = "ali@socar.com", Phone = "+905000000000", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
         context.Users.AddRange(operatorUser, reporter);
 
-        var team = new Team { TeamName = "Kurtarma Ekibi", Status = "Forwarded" };
+        var team = new Team { TeamName = "Kurtarma Ekibi", Status = TeamStatus.Forwarded };
         context.Teams.Add(team);
 
         var incident = new Incident 
@@ -171,7 +171,7 @@ public class AssignmentAndStatusLogicTests
             Latitude = 40.0m, 
             Longitude = 29.0m, 
             Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 },
-            Status = "Assigned" 
+            Status = IncidentStatus.Assigned 
         };        
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
@@ -197,11 +197,11 @@ public class AssignmentAndStatusLogicTests
         result.Data.Status.Should().Be("Resolved");
 
         var updatedIncident = await context.Incidents.FindAsync(incident.Id);
-        updatedIncident!.Status.Should().Be("Resolved");
+        updatedIncident!.Status.Should().Be(IncidentStatus.Resolved);
 
         // SDDC-38: Ekip tekrar Idle yapılmış olmalı
         var updatedTeam = await context.Teams.FindAsync(team.Id);
-        updatedTeam!.Status.Should().Be("Idle");
+        updatedTeam!.Status.Should().Be(TeamStatus.Idle);
 
         // SDDC-38 / SD-012: CompletedAt doldurulmuş olmalı
         var updatedAssignment = await context.Assignments.FindAsync(assignment.Id);
@@ -210,8 +210,8 @@ public class AssignmentAndStatusLogicTests
         // SDDC-15: IncidentStatusChangedEvent fırlatılmış olmalı
         publisherMock.Verify(p => p.Publish(It.Is<IncidentStatusChangedEvent>(e =>
             e.IncidentId == incident.Id &&
-            e.PreviousStatus == "Assigned" &&
-            e.NewStatus == "Resolved" &&
+            e.PreviousStatus == IncidentStatus.Assigned &&
+            e.NewStatus == IncidentStatus.Resolved &&
             e.ChangedById == operatorUser.Id
         ), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -235,7 +235,7 @@ public class AssignmentAndStatusLogicTests
             Latitude = 40.0m,
             Longitude = 29.0m,
             Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 },
-            Status = "Open"
+            Status = IncidentStatus.Open
         };
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
@@ -249,7 +249,7 @@ public class AssignmentAndStatusLogicTests
         // Assert
         result.Data.Status.Should().Be("Canceled");
         var updatedIncident = await context.Incidents.FindAsync(incident.Id);
-        updatedIncident!.Status.Should().Be("Canceled");
+        updatedIncident!.Status.Should().Be(IncidentStatus.Canceled);
     }
 
     // 5. SDDC-38: REPORTER CANNOT CANCEL ASSIGNED INCIDENT TEST
@@ -262,7 +262,7 @@ public class AssignmentAndStatusLogicTests
 
         var operatorUser = new User { FirstName = "Op", LastName = "User", Email = "opcancel@socar.com", Phone = "+905000000030", PasswordHash = "p", Department = "D", RoleType = RoleType.Operator };
         var reporter = new User { FirstName = "Ahmet", LastName = "Yılmaz", Email = "reporter2@socar.com", Phone = "+905000000031", PasswordHash = "p", Department = "Field", RoleType = RoleType.Employee };
-        var team = new Team { TeamName = "Team A", Status = "Forwarded" };
+        var team = new Team { TeamName = "Team A", Status = TeamStatus.Forwarded };
         context.Users.AddRange(operatorUser, reporter);
         context.Teams.Add(team);
 
@@ -274,7 +274,7 @@ public class AssignmentAndStatusLogicTests
             Latitude = 40.0m,
             Longitude = 29.0m,
             Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 },
-            Status = "Assigned"
+            Status = IncidentStatus.Assigned
         };
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
@@ -302,11 +302,11 @@ public class AssignmentAndStatusLogicTests
         var reporter = new User { FirstName = "Rep", LastName = "User", Email = "rep@socar.com", Phone = "+905000000002", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
         context.Users.AddRange(operatorUser, reporter);
 
-        var team = new Team { TeamName = "Alpha Team", Status = "Forwarded" };
+        var team = new Team { TeamName = "Alpha Team", Status = TeamStatus.Forwarded };
         context.Teams.Add(team);
 
-        var activeIncident = new Incident { ReporterId = reporter.Id, Category = "Gas", EmergencyCode = "Yellow", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Assigned" };
-        var newIncident = new Incident { ReporterId = reporter.Id, Category = "Fire", EmergencyCode = "Red", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Open" };
+        var activeIncident = new Incident { ReporterId = reporter.Id, Category = "Gas", EmergencyCode = "Yellow", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = IncidentStatus.Assigned };
+        var newIncident = new Incident { ReporterId = reporter.Id, Category = "Fire", EmergencyCode = "Red", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = IncidentStatus.Open };
         context.Incidents.AddRange(activeIncident, newIncident);
         await context.SaveChangesAsync();
 
@@ -333,12 +333,12 @@ public class AssignmentAndStatusLogicTests
         var reporter = new User { FirstName = "Rep", LastName = "User", Email = "rep2@socar.com", Phone = "+905000000004", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
         context.Users.AddRange(operatorUser, reporter);
 
-        var team = new Team { TeamName = "Beta Team", Status = "Idle" };
+        var team = new Team { TeamName = "Beta Team", Status = TeamStatus.Idle };
         context.Teams.Add(team);
 
         // Önceki olay çözülmüş (Resolved)
-        var resolvedIncident = new Incident { ReporterId = reporter.Id, Category = "Gas", EmergencyCode = "Yellow", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Resolved" };
-        var newIncident = new Incident { ReporterId = reporter.Id, Category = "Fire", EmergencyCode = "Red", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = "Open" };
+        var resolvedIncident = new Incident { ReporterId = reporter.Id, Category = "Gas", EmergencyCode = "Yellow", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = IncidentStatus.Resolved };
+        var newIncident = new Incident { ReporterId = reporter.Id, Category = "Fire", EmergencyCode = "Red", Latitude = 40, Longitude = 29, Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 }, Status = IncidentStatus.Open };
         context.Incidents.AddRange(resolvedIncident, newIncident);
         await context.SaveChangesAsync();
 

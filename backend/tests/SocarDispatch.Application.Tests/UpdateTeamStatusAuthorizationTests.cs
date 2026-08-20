@@ -41,7 +41,7 @@ public class UpdateTeamStatusAuthorizationTests
         context.Users.Add(teamMember);
         await context.SaveChangesAsync();
 
-        var team = new Team { TeamName = "A Ekibi", Status = "Idle" };
+        var team = new Team { TeamName = "A Ekibi", Status = TeamStatus.Idle };
         team.Members.Add(new TeamMember { UserId = teamMember.Id });
         context.Teams.Add(team);
         await context.SaveChangesAsync();
@@ -76,7 +76,7 @@ public class UpdateTeamStatusAuthorizationTests
         context.Users.Add(leaderUser);
         await context.SaveChangesAsync();
 
-        var team = new Team { TeamName = "B Ekibi", LeaderId = leaderUser.Id, Status = "Idle" };
+        var team = new Team { TeamName = "B Ekibi", LeaderId = leaderUser.Id, Status = TeamStatus.Idle };
         context.Teams.Add(team);
         await context.SaveChangesAsync();
 
@@ -109,7 +109,7 @@ public class UpdateTeamStatusAuthorizationTests
         };
         context.Users.Add(operatorUser);
 
-        var team = new Team { TeamName = "C Ekibi", Status = "Idle" };
+        var team = new Team { TeamName = "C Ekibi", Status = TeamStatus.Idle };
         context.Teams.Add(team);
         await context.SaveChangesAsync();
 
@@ -142,7 +142,7 @@ public class UpdateTeamStatusAuthorizationTests
         };
         context.Users.Add(teamUser);
 
-        var targetTeam = new Team { TeamName = "Hedef Ekip", Status = "Idle" };
+        var targetTeam = new Team { TeamName = "Hedef Ekip", Status = TeamStatus.Idle };
         context.Teams.Add(targetTeam);
         await context.SaveChangesAsync();
 

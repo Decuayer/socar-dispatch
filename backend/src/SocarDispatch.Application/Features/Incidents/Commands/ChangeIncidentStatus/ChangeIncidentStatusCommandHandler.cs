@@ -46,6 +46,8 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
             .OrderByDescending(a => a.AssignedAt)
             .FirstOrDefault();
 
+        var targetStatus = Enum.Parse<IncidentStatus>(request.Status, true);
+
         // -------------------------------------------------------------
         // 1. Contextual Role-Based Authorization (RBAC Validation)
         // -------------------------------------------------------------
@@ -56,7 +58,7 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
         else if (requester.RoleType == RoleType.Team)
         {
             // Ekip yalnızca statüyü 'Resolved' yapabilir.
-            if (request.Status != IncidentStatus.Resolved.ToString())
+            if (targetStatus != IncidentStatus.Resolved)
             {
                 throw new ForbiddenAccessException("Team members can only set incident status to Resolved.");
             }
@@ -78,7 +80,7 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
         else if (requester.RoleType == RoleType.Employee || requester.Id == incident.ReporterId)
         {
             // Reporter/Çalışan yalnızca kendi bildirdiği Open & unassigned olayları 'Canceled' yapabilir.
-            if (request.Status != IncidentStatus.Canceled.ToString())
+            if (targetStatus != IncidentStatus.Canceled)
             {
                 throw new ForbiddenAccessException("Reporters can only cancel incidents.");
             }
@@ -88,7 +90,7 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
                 throw new ForbiddenAccessException("Only the original reporter can cancel this incident.");
             }
 
-            if (incident.Status != IncidentStatus.Open.ToString() || activeAssignment != null)
+            if (incident.Status != IncidentStatus.Open || activeAssignment != null)
             {
                 throw new DomainException("Incidents can only be canceled by reporter when status is Open and unassigned.");
             }
@@ -102,13 +104,13 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
         // 2. Automatic Team Release & Assignment Completion (SDDC-38)
         // -------------------------------------------------------------
         var previousStatus = incident.Status;
-        incident.Status = request.Status;
+        incident.Status = targetStatus;
 
-        if (request.Status == IncidentStatus.Resolved.ToString() || request.Status == IncidentStatus.Canceled.ToString())
+        if (targetStatus == IncidentStatus.Resolved || targetStatus == IncidentStatus.Canceled)
         {
             if (activeAssignment != null)
             {
-                activeAssignment.Team.Status = TeamStatus.Idle.ToString();
+                activeAssignment.Team.Status = TeamStatus.Idle;
                 activeAssignment.Team.UpdatedAt = DateTime.UtcNow;
                 activeAssignment.CompletedAt = DateTime.UtcNow; // SD-012: Kapanış zamanı yazılıyor
             }
@@ -143,7 +145,7 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
                 MediaType = m.MediaType,
                 CreatedAt = m.CreatedAt
             }).ToList(),
-            Status = incident.Status,
+            Status = incident.Status.ToString(),
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,
             CreatedAt = incident.CreatedAt,

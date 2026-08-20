@@ -48,7 +48,7 @@ public class UpdateTeamStatusCommandHandler : IRequestHandler<UpdateTeamStatusCo
             }
         }
 
-        team.Status = request.Status;
+        team.Status = Enum.Parse<TeamStatus>(request.Status, true);
         team.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -57,7 +57,7 @@ public class UpdateTeamStatusCommandHandler : IRequestHandler<UpdateTeamStatusCo
         {
             Id = team.Id,
             TeamName = team.TeamName,
-            Status = team.Status,
+            Status = team.Status.ToString(),
             LeaderId = team.LeaderId,
             LeaderFullName = team.Leader != null ? $"{team.Leader.FirstName} {team.Leader.LastName}".Trim() : null,
             CurrentLatitude = team.CurrentLatitude,

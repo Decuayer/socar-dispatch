@@ -49,8 +49,8 @@ public class RemoveTeamMemberCommandHandler : IRequestHandler<RemoveTeamMemberCo
             .Include(a => a.Incident)
             .AnyAsync(a => a.TeamId == request.TeamId &&
                            a.CompletedAt == null &&
-                           a.Incident.Status != IncidentStatus.Resolved.ToString() &&
-                           a.Incident.Status != IncidentStatus.Canceled.ToString(),
+                           a.Incident.Status != IncidentStatus.Resolved &&
+                           a.Incident.Status != IncidentStatus.Canceled,
                        cancellationToken);
 
         if (hasActiveAssignment)
@@ -84,7 +84,7 @@ public class RemoveTeamMemberCommandHandler : IRequestHandler<RemoveTeamMemberCo
         {
             Id = t.Id,
             TeamName = t.TeamName,
-            Status = t.Status,
+            Status = t.Status.ToString(),
             LeaderId = t.LeaderId,
             LeaderFullName = t.Leader != null ? $"{t.Leader.FirstName} {t.Leader.LastName}".Trim() : null,
             CurrentLatitude = t.CurrentLatitude,

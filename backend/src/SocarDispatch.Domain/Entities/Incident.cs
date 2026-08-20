@@ -1,4 +1,5 @@
 using NetTopologySuite.Geometries;
+using SocarDispatch.Domain.Enums;
 
 namespace SocarDispatch.Domain.Entities;
 
@@ -12,7 +13,7 @@ public class Incident
     public string EmergencyCode { get; set; } = string.Empty;
     public string? Description { get; set; }
     public ICollection<IncidentMedia> MediaAttachments { get; set; } = new List<IncidentMedia>();
-    public string Status { get; set; } = "Open"; // Open, Assigned, Resolved, Canceled    
+    public IncidentStatus Status { get; set; } = IncidentStatus.Open;
     public decimal Latitude { get; set; }
     public decimal Longitude { get; set; }
     

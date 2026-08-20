@@ -54,7 +54,7 @@ public class IncidentReportTests
         };
         context.Users.Add(operatorUser);
 
-        var team = new Team { TeamName = "Yangın Müdahale Ekibi 1", LeaderId = reporterUser.Id, Status = "Forwarded" };
+        var team = new Team { TeamName = "Yangın Müdahale Ekibi 1", LeaderId = reporterUser.Id, Status = TeamStatus.Forwarded };
         context.Teams.Add(team);
 
         var incident = new Incident
@@ -63,7 +63,7 @@ public class IncidentReportTests
             Category = "Yangın",
             EmergencyCode = "RED-1",
             Description = "A Blok Yangın",
-            Status = "Assigned",
+            Status = IncidentStatus.Assigned,
             Latitude = 40.4093m,
             Longitude = 49.8671m,
             Location = new Point(49.8671, 40.4093) { SRID = 4326 }
@@ -114,7 +114,7 @@ public class IncidentReportTests
         };
         context.Users.Add(reporterUser);
 
-        var team = new Team { TeamName = "Sağlık Ekibi 2", LeaderId = reporterUser.Id, Status = "Idle" };
+        var team = new Team { TeamName = "Sağlık Ekibi 2", LeaderId = reporterUser.Id, Status = TeamStatus.Idle };
         context.Teams.Add(team);
 
         var incident = new Incident
@@ -122,7 +122,7 @@ public class IncidentReportTests
             ReporterId = reporterUser.Id,
             Category = "Tıbbi Acil",
             EmergencyCode = "BLUE-2",
-            Status = "Open",
+            Status = IncidentStatus.Open,
             Latitude = 40.4093m,
             Longitude = 49.8671m,
             Location = new Point(49.8671, 40.4093) { SRID = 4326 }

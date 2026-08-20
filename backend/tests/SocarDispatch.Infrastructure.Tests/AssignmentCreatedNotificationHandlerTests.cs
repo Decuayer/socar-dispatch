@@ -5,6 +5,8 @@ using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Domain.Entities;
 using SocarDispatch.Domain.Events;
 using SocarDispatch.Infrastructure.Notifications;
+using SocarDispatch.Domain.Enums;
+
 
 namespace SocarDispatch.Infrastructure.Tests;
 
@@ -77,13 +79,13 @@ public class AssignmentCreatedNotificationHandlerTests
             DeviceToken = null
         };
 
-        var team = new Team { Id = Guid.NewGuid(), TeamName = "Alpha Response Team", Status = "Available" };
+        var team = new Team { Id = Guid.NewGuid(), TeamName = "Alpha Response Team", Status = TeamStatus.Idle };
         var incident = new Incident
         {
             Id = Guid.NewGuid(),
             EmergencyCode = "FIRE-RED-01",
             Category = "Fire",
-            Status = "Open",
+            Status = IncidentStatus.Open,
             Latitude = 40.3776m,
             Longitude = 49.8920m,
             Location = new Point(49.8920, 40.3776) { SRID = 4326 }

@@ -62,7 +62,7 @@ public class TeamCrudTests
     {
         // Arrange
         using var context = CreateInMemoryDbContext();
-        context.Teams.Add(new Team { TeamName = "Mevcut Ekip", Status = "Idle" });
+        context.Teams.Add(new Team { TeamName = "Mevcut Ekip", Status = TeamStatus.Idle });
         await context.SaveChangesAsync();
 
         var handler = new CreateTeamCommandHandler(context);
@@ -106,7 +106,7 @@ public class TeamCrudTests
     {
         // Arrange
         using var context = CreateInMemoryDbContext();
-        var team = new Team { TeamName = "Yangın Müdahale Ekibi", Status = "Idle" };
+        var team = new Team { TeamName = "Yangın Müdahale Ekibi", Status = TeamStatus.Idle };
         context.Teams.Add(team);
         await context.SaveChangesAsync();
 
@@ -138,8 +138,8 @@ public class TeamCrudTests
         };
         context.Users.Add(user);
 
-        var team1 = new Team { TeamName = "1. Ekip", Status = "Idle" };
-        var team2 = new Team { TeamName = "2. Ekip", Status = "Idle" };
+        var team1 = new Team { TeamName = "1. Ekip", Status = TeamStatus.Idle };
+        var team2 = new Team { TeamName = "2. Ekip", Status = TeamStatus.Idle };
         team1.Members.Add(new TeamMember { UserId = user.Id });
         context.Teams.AddRange(team1, team2);
 
@@ -173,7 +173,7 @@ public class TeamCrudTests
         };
         context.Users.Add(leader);
 
-        var team = new Team { TeamName = "Liderli Ekip", LeaderId = leader.Id, Status = "Idle" };
+        var team = new Team { TeamName = "Liderli Ekip", LeaderId = leader.Id, Status = TeamStatus.Idle };
         team.Members.Add(new TeamMember { UserId = leader.Id });
         context.Teams.Add(team);
 

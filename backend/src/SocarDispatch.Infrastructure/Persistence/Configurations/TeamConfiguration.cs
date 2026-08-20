@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SocarDispatch.Domain.Entities;
+using SocarDispatch.Domain.Enums;
+
 
 namespace SocarDispatch.Infrastructure.Persistence.Configurations;
 
@@ -12,6 +14,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
 
         builder.HasKey(t => t.Id);
         builder.Property(t => t.TeamName).HasMaxLength(100).IsRequired();
+        builder.Property(t => t.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(TeamStatus.Idle).IsRequired();
 
         builder.Property(t => t.CurrentLatitude).HasPrecision(9, 6);
         builder.Property(t => t.CurrentLongitude).HasPrecision(9, 6);

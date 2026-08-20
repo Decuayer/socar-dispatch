@@ -48,7 +48,7 @@ public class GetIncidentByIdQueryHandler : IRequestHandler<GetIncidentByIdQuery,
                 MediaType = m.MediaType,
                 CreatedAt = m.CreatedAt
             }).ToList(),
-            Status = incident.Status,
+            Status = incident.Status.ToString(),
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,
             CreatedAt = incident.CreatedAt,
