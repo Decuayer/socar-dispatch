@@ -64,7 +64,7 @@ public class UpdateIncidentCommandHandler : IRequestHandler<UpdateIncidentComman
             Category = incident.Category,
             EmergencyCode = incident.EmergencyCode,
             Description = incident.Description,
-            Status = incident.Status,
+            Status = incident.Status.ToString(),
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,
             CreatedAt = incident.CreatedAt,

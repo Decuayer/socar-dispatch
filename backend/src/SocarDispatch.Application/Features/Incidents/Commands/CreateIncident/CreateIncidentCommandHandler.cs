@@ -5,6 +5,7 @@ using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Incidents.DTOs;
 using SocarDispatch.Domain.Entities;
+using SocarDispatch.Domain.Enums;
 using SocarDispatch.Domain.Exceptions;
 
 namespace SocarDispatch.Application.Features.Incidents.Commands.CreateIncident;
@@ -40,7 +41,7 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
             Category = request.Category,
             EmergencyCode = request.EmergencyCode,
             Description = request.Description,
-            Status = "Open",
+            Status = IncidentStatus.Open,
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Location = new Point((double)request.Longitude, (double)request.Latitude) { SRID = 4326 },
@@ -64,7 +65,7 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
             Category = incident.Category,
             EmergencyCode = incident.EmergencyCode,
             Description = incident.Description,
-            Status = incident.Status,
+            Status = incident.Status.ToString(),
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,
             CreatedAt = incident.CreatedAt,

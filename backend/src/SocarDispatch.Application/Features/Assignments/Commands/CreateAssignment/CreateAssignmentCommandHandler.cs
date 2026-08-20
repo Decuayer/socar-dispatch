@@ -46,8 +46,8 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
             .Include(a => a.Incident)
             .AnyAsync(a => a.TeamId == request.TeamId &&
                            a.CompletedAt == null &&
-                           a.Incident.Status != IncidentStatus.Resolved.ToString() &&
-                           a.Incident.Status != IncidentStatus.Canceled.ToString(),
+                           a.Incident.Status != IncidentStatus.Resolved &&
+                           a.Incident.Status != IncidentStatus.Canceled,
                        cancellationToken);
 
         if (hasActiveAssignment)
@@ -67,8 +67,8 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
         _context.Assignments.Add(assignment);
 
         // 2nd Business Rule: Set the event status to 'Assigned' and the team status to 'Forwarded'.
-        incident.Status = IncidentStatus.Assigned.ToString();
-        team.Status = TeamStatus.Forwarded.ToString();
+        incident.Status = IncidentStatus.Assigned;
+        team.Status = TeamStatus.Forwarded;
         team.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);

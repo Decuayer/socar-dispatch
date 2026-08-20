@@ -34,7 +34,7 @@ public class GetTeamByIdQueryHandler : IRequestHandler<GetTeamByIdQuery, ApiResp
         {
             Id = team.Id,
             TeamName = team.TeamName,
-            Status = team.Status,
+            Status = team.Status.ToString(),
             LeaderId = team.LeaderId,
             LeaderFullName = team.Leader != null ? $"{team.Leader.FirstName} {team.Leader.LastName}".Trim() : null,
             CurrentLatitude = team.CurrentLatitude,

@@ -1,4 +1,6 @@
 using MediatR;
+using SocarDispatch.Domain.Enums;
+
 
 namespace SocarDispatch.Domain.Events;
 
@@ -7,8 +9,8 @@ namespace SocarDispatch.Domain.Events;
 
 public record IncidentStatusChangedEvent(
     Guid IncidentId,
-    string PreviousStatus,
-    string NewStatus,
+    IncidentStatus PreviousStatus,
+    IncidentStatus NewStatus,
     Guid ChangedById,
     DateTime ChangedAt
 ) : INotification;

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Incidents.DTOs;
+using SocarDispatch.Domain.Enums;
 
 namespace SocarDispatch.Application.Features.Incidents.Queries.GetIncidents;
 
@@ -25,9 +26,9 @@ public class GetIncidentsQueryHandler : IRequestHandler<GetIncidentsQuery, ApiRe
             .AsNoTracking()
             .AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(request.Status))
+        if (!string.IsNullOrWhiteSpace(request.Status) && Enum.TryParse<IncidentStatus>(request.Status, true, out var parsedStatus))
         {
-            query = query.Where(i => i.Status.ToLower() == request.Status.ToLower());
+            query = query.Where(i => i.Status == parsedStatus);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Category))
@@ -52,7 +53,7 @@ public class GetIncidentsQueryHandler : IRequestHandler<GetIncidentsQuery, ApiRe
                     MediaType = m.MediaType,
                     CreatedAt = m.CreatedAt
                 }).ToList(),
-                Status = i.Status,
+                Status = i.Status.ToString(),
                 Latitude = i.Latitude,
                 Longitude = i.Longitude,
                 CreatedAt = i.CreatedAt,

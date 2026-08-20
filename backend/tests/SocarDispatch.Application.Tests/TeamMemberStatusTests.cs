@@ -45,7 +45,7 @@ public class TeamMemberStatusTests
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var team = new Team { TeamName = "Alpha Ekibi", Status = "Idle" };
+        var team = new Team { TeamName = "Alpha Ekibi", Status = TeamStatus.Idle };
         var member = new TeamMember
         {
             TeamId = team.Id,
@@ -108,7 +108,7 @@ public class TeamMemberStatusTests
         context.Users.AddRange(teamUser1, teamUser2);
         await context.SaveChangesAsync();
 
-        var team = new Team { TeamName = "Bravo Ekibi", Status = "Idle" };
+        var team = new Team { TeamName = "Bravo Ekibi", Status = TeamStatus.Idle };
         team.Members.Add(new TeamMember { TeamId = team.Id, UserId = teamUser1.Id });
         team.Members.Add(new TeamMember { TeamId = team.Id, UserId = teamUser2.Id });
         context.Teams.Add(team);
@@ -154,7 +154,7 @@ public class TeamMemberStatusTests
         context.Users.AddRange(operatorUser, teamUser);
         await context.SaveChangesAsync();
 
-        var team = new Team { TeamName = "Charlie Ekibi", Status = "Idle" };
+        var team = new Team { TeamName = "Charlie Ekibi", Status = TeamStatus.Idle };
         team.Members.Add(new TeamMember { TeamId = team.Id, UserId = teamUser.Id, MemberStatus = TeamMemberStatus.Available });
         context.Teams.Add(team);
         await context.SaveChangesAsync();

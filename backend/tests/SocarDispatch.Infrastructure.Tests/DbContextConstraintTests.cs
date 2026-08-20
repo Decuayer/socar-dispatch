@@ -105,7 +105,7 @@ public class DbContextConstraintTests
             Latitude = 40.991234m,
             Longitude = 29.023456m,
             Location = new NetTopologySuite.Geometries.Point(29.023456, 40.991234) { SRID = 4326 },
-            Status = "Open"
+            Status = IncidentStatus.Open
         };
 
         // Act

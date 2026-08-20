@@ -82,7 +82,7 @@ public class AddTeamMemberCommandHandler : IRequestHandler<AddTeamMemberCommand,
         {
             Id = t.Id,
             TeamName = t.TeamName,
-            Status = t.Status,
+            Status = t.Status.ToString(),
             LeaderId = t.LeaderId,
             LeaderFullName = t.Leader != null ? $"{t.Leader.FirstName} {t.Leader.LastName}".Trim() : null,
             CurrentLatitude = t.CurrentLatitude,

@@ -1,4 +1,6 @@
 using NetTopologySuite.Geometries;
+using SocarDispatch.Domain.Enums;
+
 
 namespace SocarDispatch.Domain.Entities;
 
@@ -6,7 +8,8 @@ public class Team
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string TeamName { get; set; } = string.Empty;
-    public string Status { get; set; } = "Idle"; // Idle, Forwarded, OnScene, Busy
+    public TeamStatus Status { get; set; } = TeamStatus.Idle;
+
     
     // Team Leader (The main user publishing their location)
     public Guid? LeaderId { get; set; }

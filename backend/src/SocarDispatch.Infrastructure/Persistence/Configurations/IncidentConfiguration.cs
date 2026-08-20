@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SocarDispatch.Domain.Entities;
+using SocarDispatch.Domain.Enums;
+
 
 namespace SocarDispatch.Infrastructure.Persistence.Configurations;
 
@@ -14,7 +16,7 @@ public class IncidentConfiguration : IEntityTypeConfiguration<Incident>
         builder.Property(i => i.Category).HasMaxLength(50).IsRequired();
         builder.Property(i => i.EmergencyCode).HasMaxLength(20).IsRequired();
         builder.Property(i => i.Description).HasColumnType("text");
-        builder.Property(i => i.Status).HasMaxLength(20).HasDefaultValue("Open").IsRequired();
+        builder.Property(i => i.Status).HasConversion<string>().HasMaxLength(20).HasDefaultValue(IncidentStatus.Open).IsRequired();
 
         builder.Property(t => t.Latitude).HasPrecision(9, 6);
         builder.Property(t => t.Longitude).HasPrecision(9, 6);

@@ -51,7 +51,7 @@ public class UpdateIncidentAuthorizationTests
             Latitude = 40.99m,
             Longitude = 29.02m,
             Location = new NetTopologySuite.Geometries.Point(29.02, 40.99) { SRID = 4326 },
-            Status = "Open"
+            Status = IncidentStatus.Open
         };
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
@@ -120,7 +120,7 @@ public class UpdateIncidentAuthorizationTests
             Latitude = 40.99m,
             Longitude = 29.02m,
             Location = new NetTopologySuite.Geometries.Point(29.02, 40.99) { SRID = 4326 },
-            Status = "Open"
+            Status = IncidentStatus.Open
         };
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
@@ -184,7 +184,7 @@ public class UpdateIncidentAuthorizationTests
             Latitude = 40.99m,
             Longitude = 29.02m,
             Location = new NetTopologySuite.Geometries.Point(29.02, 40.99) { SRID = 4326 },
-            Status = "Open"
+            Status = IncidentStatus.Open
         };
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
