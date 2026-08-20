@@ -7,6 +7,7 @@ public class UpdateTeamStatusCommandValidator : AbstractValidator<UpdateTeamStat
     public UpdateTeamStatusCommandValidator()
     {
         RuleFor(x => x.TeamId).NotEmpty();
+        RuleFor(x => x.RequesterId).NotEmpty();
         RuleFor(x => x.Status)
             .NotEmpty()
             .Must(s => new[] { "Idle", "Forwarded", "OnScene", "Busy" }

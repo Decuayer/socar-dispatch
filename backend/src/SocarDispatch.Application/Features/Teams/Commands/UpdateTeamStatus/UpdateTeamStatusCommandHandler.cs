@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Teams.DTOs;
+using SocarDispatch.Domain.Enums;
 using SocarDispatch.Domain.Exceptions;
 
 namespace SocarDispatch.Application.Features.Teams.Commands.UpdateTeamStatus;
@@ -26,6 +27,25 @@ public class UpdateTeamStatusCommandHandler : IRequestHandler<UpdateTeamStatusCo
         if (team == null)
         {
             throw new EntityNotFoundException("Team", request.TeamId);
+        }
+
+        // İsteği yapan kullanıcının yetki kontrolü
+        var requester = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.RequesterId, cancellationToken);
+        if (requester == null)
+        {
+            throw new DomainException("Invalid user session. User not found.");
+        }
+
+        // Team rolündeki kullanıcı sadece kendi ekibinin statüsünü güncelleyebilir
+        if (requester.RoleType == RoleType.Team)
+        {
+            var isMember = team.Members.Any(m => m.UserId == request.RequesterId)
+                           || team.LeaderId == request.RequesterId;
+
+            if (!isMember)
+            {
+                throw new ForbiddenAccessException("You are only authorized to update the status of your assigned team.");
+            }
         }
 
         team.Status = request.Status;
