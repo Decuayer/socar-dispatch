@@ -9,6 +9,7 @@ using SocarDispatch.Application.Features.Teams.Commands.RemoveTeamMember;
 using SocarDispatch.Application.Features.Teams.Commands.UpdateTeam;
 using SocarDispatch.Application.Features.Teams.Commands.UpdateTeamLocation;
 using SocarDispatch.Application.Features.Teams.Commands.UpdateTeamStatus;
+using SocarDispatch.Application.Features.Teams.Commands.UpdateTeamMemberStatus;
 using SocarDispatch.Application.Features.Teams.DTOs;
 using SocarDispatch.Application.Features.Teams.Queries.GetTeamById;
 using SocarDispatch.Application.Features.Teams.Queries.GetTeams;
@@ -104,6 +105,20 @@ public class TeamsController : ControllerBase
     {
         var requesterId = GetRequesterId();
         var command = new UpdateTeamStatusCommand(teamId, requesterId, request.Status);
+        var result = await _sender.Send(command);
+        return Ok(result);
+    }
+
+    // PATCH /api/v1/teams/{teamId}/members/{userId}/status
+    [HttpPatch("{teamId:guid}/members/{userId:guid}/status")]
+    [Authorize(Roles = "Operator,Team")]
+    public async Task<ActionResult<ApiResponse<TeamMemberDto>>> UpdateMemberStatus(
+        Guid teamId, 
+        Guid userId, 
+        [FromBody] UpdateTeamMemberStatusRequestDto request)
+    {
+        var requesterId = GetRequesterId();
+        var command = new UpdateTeamMemberStatusCommand(teamId, userId, requesterId, request.Status);
         var result = await _sender.Send(command);
         return Ok(result);
     }
