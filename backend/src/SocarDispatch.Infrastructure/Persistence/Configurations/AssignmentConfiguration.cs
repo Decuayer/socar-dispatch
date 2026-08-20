@@ -16,7 +16,7 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
         builder.HasOne(a => a.Incident)
             .WithMany(i => i.Assignments)
             .HasForeignKey(a => a.IncidentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(a => a.Team)
             .WithMany(t => t.Assignments)

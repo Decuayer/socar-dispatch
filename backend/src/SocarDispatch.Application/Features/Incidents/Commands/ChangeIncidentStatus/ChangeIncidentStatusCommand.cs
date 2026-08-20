@@ -8,5 +8,6 @@ public record ChangeIncidentStatusCommand(
     Guid Id,
     string Status,
     Guid RequesterId,
-    string RequesterRole
+    string RequesterRole,
+    string? CompletionNotes = null
 ) : IRequest<ApiResponse<IncidentDto>>;
