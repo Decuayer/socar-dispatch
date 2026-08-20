@@ -73,11 +73,18 @@ public class IncidentsController : ControllerBase
     // PUT /api/v1/incidents/{id}
     // Updates incident details (with operator authority).
     [HttpPut("{id:guid}")]
-    [Authorize(Roles = "Operator")]
+    [Authorize]
     public async Task<ActionResult<ApiResponse<IncidentDto>>> Update(Guid id, [FromBody] UpdateIncidentRequestDto request)
-    {
+    {   
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var requesterId))
+        {
+            throw new DomainException("Invalid user session. Token is missing or invalid.");
+        }
+
         var command = new UpdateIncidentCommand(
             id,
+            requesterId,
             request.Category,
             request.EmergencyCode,
             request.Description,
@@ -85,7 +92,6 @@ public class IncidentsController : ControllerBase
             request.Latitude,
             request.Longitude
         );
-
         var result = await _sender.Send(command);
         return Ok(result);
     }

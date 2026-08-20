@@ -6,6 +6,7 @@ namespace SocarDispatch.Application.Features.Incidents.Commands.UpdateIncident;
 
 public record UpdateIncidentCommand(
     Guid Id,
+    Guid RequesterId,
     string Category,
     string EmergencyCode,
     string? Description,
