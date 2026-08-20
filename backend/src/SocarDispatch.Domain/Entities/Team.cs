@@ -21,4 +21,5 @@ public class Team
     // Navigation Properties
     public ICollection<TeamMember> Members { get; set; } = new List<TeamMember>();
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+    public ICollection<IncidentReport> Reports { get; set; } = new List<IncidentReport>();
 }
