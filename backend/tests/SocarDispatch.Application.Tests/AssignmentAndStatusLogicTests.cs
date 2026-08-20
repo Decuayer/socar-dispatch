@@ -28,7 +28,6 @@ public class AssignmentAndStatusLogicTests
     }
 
     // 1. ASSIGNMENT BUSINESS RULE TEST (Incident -> Assigned, Team -> Forwarded)
-
     [Fact]
     public async Task CreateAssignment_ShouldLinkEntities_AndTransitionStatusesCorrectly()
     {
@@ -94,10 +93,10 @@ public class AssignmentAndStatusLogicTests
 
         // Veritabanı Durum Kontrolleri
         var updatedIncident = await context.Incidents.FindAsync(incident.Id);
-        updatedIncident!.Status.Should().Be("Assigned"); // Event became 'Assigned'
+        updatedIncident!.Status.Should().Be("Assigned");
 
         var updatedTeam = await context.Teams.FindAsync(team.Id);
-        updatedTeam!.Status.Should().Be("Forwarded"); // Team status changed to 'Redirected'
+        updatedTeam!.Status.Should().Be("Forwarded");
 
         var assignmentExists = await context.Assignments.AnyAsync(a => a.IncidentId == incident.Id && a.TeamId == team.Id);
         assignmentExists.Should().BeTrue();
@@ -139,23 +138,30 @@ public class AssignmentAndStatusLogicTests
         await context.SaveChangesAsync();
         var handler = new UpdateTeamStatusCommandHandler(context);
         var command = new UpdateTeamStatusCommand(team.Id, operatorUser.Id, "OnScene");
+
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
+
         // Assert
         result.Data.Status.Should().Be("OnScene");
         var updatedTeam = await context.Teams.FindAsync(team.Id);
         updatedTeam!.Status.Should().Be("OnScene");
     }
 
-    // 3. INCIDENT STATUS UPDATE TEST (Assigned -> Resolved)    
+    // 3. SDDC-38: INCIDENT RESOLUTION -> TEAM RELEASED TO IDLE & COMPLETED_AT POPULATED & EVENT PUBLISHED
     [Fact]
-    public async Task ChangeIncidentStatus_ShouldUpdateStatusCorrectly()
+    public async Task ChangeIncidentStatus_WhenResolved_ShouldReleaseTeamToIdle_SetCompletedAt_AndPublishEvent()
     {
         // Arrange
         using var context = CreateInMemoryDbContext();
+        var publisherMock = new Mock<IPublisher>();
+
+        var operatorUser = new User { FirstName = "Op", LastName = "User", Email = "opres@socar.com", Phone = "+905000000010", PasswordHash = "p", Department = "D", RoleType = RoleType.Operator };
         var reporter = new User { FirstName = "Ali", LastName = "Veli", Email = "ali@socar.com", Phone = "+905000000000", PasswordHash = "p", Department = "D", RoleType = RoleType.Employee };
-        context.Users.Add(reporter);
-        await context.SaveChangesAsync();
+        context.Users.AddRange(operatorUser, reporter);
+
+        var team = new Team { TeamName = "Kurtarma Ekibi", Status = "Forwarded" };
+        context.Teams.Add(team);
 
         var incident = new Incident 
         { 
@@ -167,20 +173,122 @@ public class AssignmentAndStatusLogicTests
             Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 },
             Status = "Assigned" 
         };        
-        
         context.Incidents.Add(incident);
         await context.SaveChangesAsync();
 
-        var handler = new ChangeIncidentStatusCommandHandler(context);
-        var command = new ChangeIncidentStatusCommand(incident.Id, "Resolved");
+        var assignment = new Assignment
+        {
+            IncidentId = incident.Id,
+            TeamId = team.Id,
+            OperatorId = operatorUser.Id,
+            AssignedAt = DateTime.UtcNow.AddMinutes(-30),
+            CompletedAt = null
+        };
+        context.Assignments.Add(assignment);
+        await context.SaveChangesAsync();
+
+        var handler = new ChangeIncidentStatusCommandHandler(context, publisherMock.Object);
+        var command = new ChangeIncidentStatusCommand(incident.Id, "Resolved", operatorUser.Id, RoleType.Operator.ToString());
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
         result.Data.Status.Should().Be("Resolved");
+
         var updatedIncident = await context.Incidents.FindAsync(incident.Id);
         updatedIncident!.Status.Should().Be("Resolved");
+
+        // SDDC-38: Ekip tekrar Idle yapılmış olmalı
+        var updatedTeam = await context.Teams.FindAsync(team.Id);
+        updatedTeam!.Status.Should().Be("Idle");
+
+        // SDDC-38 / SD-012: CompletedAt doldurulmuş olmalı
+        var updatedAssignment = await context.Assignments.FindAsync(assignment.Id);
+        updatedAssignment!.CompletedAt.Should().NotBeNull();
+
+        // SDDC-15: IncidentStatusChangedEvent fırlatılmış olmalı
+        publisherMock.Verify(p => p.Publish(It.Is<IncidentStatusChangedEvent>(e =>
+            e.IncidentId == incident.Id &&
+            e.PreviousStatus == "Assigned" &&
+            e.NewStatus == "Resolved" &&
+            e.ChangedById == operatorUser.Id
+        ), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // 4. SDDC-38: REPORTER SELF-CANCELLATION TEST
+    [Fact]
+    public async Task ChangeIncidentStatus_WhenReporterCancelsOwnOpenIncident_ShouldSucceed()
+    {
+        // Arrange
+        using var context = CreateInMemoryDbContext();
+        var publisherMock = new Mock<IPublisher>();
+
+        var reporter = new User { FirstName = "Ahmet", LastName = "Yılmaz", Email = "reporter@socar.com", Phone = "+905000000020", PasswordHash = "p", Department = "Field", RoleType = RoleType.Employee };
+        context.Users.Add(reporter);
+
+        var incident = new Incident
+        {
+            ReporterId = reporter.Id,
+            Category = "Sızıntı",
+            EmergencyCode = "Yeşil Kod",
+            Latitude = 40.0m,
+            Longitude = 29.0m,
+            Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 },
+            Status = "Open"
+        };
+        context.Incidents.Add(incident);
+        await context.SaveChangesAsync();
+
+        var handler = new ChangeIncidentStatusCommandHandler(context, publisherMock.Object);
+        var command = new ChangeIncidentStatusCommand(incident.Id, "Canceled", reporter.Id, RoleType.Employee.ToString());
+
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Data.Status.Should().Be("Canceled");
+        var updatedIncident = await context.Incidents.FindAsync(incident.Id);
+        updatedIncident!.Status.Should().Be("Canceled");
+    }
+
+    // 5. SDDC-38: REPORTER CANNOT CANCEL ASSIGNED INCIDENT TEST
+    [Fact]
+    public async Task ChangeIncidentStatus_WhenReporterTriesToCancelAssignedIncident_ShouldThrowDomainException()
+    {
+        // Arrange
+        using var context = CreateInMemoryDbContext();
+        var publisherMock = new Mock<IPublisher>();
+
+        var operatorUser = new User { FirstName = "Op", LastName = "User", Email = "opcancel@socar.com", Phone = "+905000000030", PasswordHash = "p", Department = "D", RoleType = RoleType.Operator };
+        var reporter = new User { FirstName = "Ahmet", LastName = "Yılmaz", Email = "reporter2@socar.com", Phone = "+905000000031", PasswordHash = "p", Department = "Field", RoleType = RoleType.Employee };
+        var team = new Team { TeamName = "Team A", Status = "Forwarded" };
+        context.Users.AddRange(operatorUser, reporter);
+        context.Teams.Add(team);
+
+        var incident = new Incident
+        {
+            ReporterId = reporter.Id,
+            Category = "Yangın",
+            EmergencyCode = "Kırmızı Kod",
+            Latitude = 40.0m,
+            Longitude = 29.0m,
+            Location = new NetTopologySuite.Geometries.Point(29.0, 40.0) { SRID = 4326 },
+            Status = "Assigned"
+        };
+        context.Incidents.Add(incident);
+        await context.SaveChangesAsync();
+
+        context.Assignments.Add(new Assignment { IncidentId = incident.Id, TeamId = team.Id, OperatorId = operatorUser.Id, AssignedAt = DateTime.UtcNow });
+        await context.SaveChangesAsync();
+
+        var handler = new ChangeIncidentStatusCommandHandler(context, publisherMock.Object);
+        var command = new ChangeIncidentStatusCommand(incident.Id, "Canceled", reporter.Id, RoleType.Employee.ToString());
+
+        // Act & Assert (Atanmış olay reporter tarafından iptal edilemez)
+        var act = async () => await handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>()
+            .WithMessage("Incidents can only be canceled by reporter when status is Open and unassigned.");
     }
 
     [Fact]
@@ -248,5 +356,4 @@ public class AssignmentAndStatusLogicTests
         result.Data.Should().NotBeNull();
         publisherMock.Verify(p => p.Publish(It.IsAny<AssignmentCreatedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
     }
-
 }
