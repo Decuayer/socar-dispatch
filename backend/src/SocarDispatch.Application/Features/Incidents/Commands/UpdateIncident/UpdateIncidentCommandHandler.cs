@@ -5,6 +5,8 @@ using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Incidents.DTOs;
 using SocarDispatch.Domain.Exceptions;
+using SocarDispatch.Domain.Entities;
+
 
 namespace SocarDispatch.Application.Features.Incidents.Commands.UpdateIncident;
 
@@ -22,6 +24,7 @@ public class UpdateIncidentCommandHandler : IRequestHandler<UpdateIncidentComman
         var incident = await _context.Incidents
             .Include(i => i.Reporter)
             .Include(i => i.Assignments).ThenInclude(a => a.Team)
+            .Include(i => i.MediaAttachments) 
             .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
         if (incident == null)
@@ -32,7 +35,12 @@ public class UpdateIncidentCommandHandler : IRequestHandler<UpdateIncidentComman
         incident.Category = request.Category;
         incident.EmergencyCode = request.EmergencyCode;
         incident.Description = request.Description;
-        incident.MediaUrl = request.MediaUrl;
+        incident.MediaAttachments = request.MediaAttachments.Select(m => new IncidentMedia
+        {
+            MediaUrl = m.MediaUrl,
+            MediaType = m.MediaType,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
         incident.Latitude = request.Latitude;
         incident.Longitude = request.Longitude;
         incident.Location = new Point((double)request.Longitude, (double)request.Latitude) { SRID = 4326 };
@@ -49,13 +57,19 @@ public class UpdateIncidentCommandHandler : IRequestHandler<UpdateIncidentComman
             Category = incident.Category,
             EmergencyCode = incident.EmergencyCode,
             Description = incident.Description,
-            MediaUrl = incident.MediaUrl,
             Status = incident.Status,
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,
             CreatedAt = incident.CreatedAt,
             AssignedTeamId = latestAssignment?.TeamId,
-            AssignedTeamName = latestAssignment?.Team.TeamName
+            AssignedTeamName = latestAssignment?.Team.TeamName,
+            MediaAttachments = incident.MediaAttachments.Select(m => new IncidentMediaDto
+            {
+                Id = m.Id,
+                MediaUrl = m.MediaUrl,
+                MediaType = m.MediaType,
+                CreatedAt = m.CreatedAt
+            }).ToList(),
         };
 
         return ApiResponse<IncidentDto>.SuccessResult(dto, "Incident updated successfully.");

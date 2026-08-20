@@ -22,6 +22,7 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
             .Include(i => i.Reporter)
             .Include(i => i.Assignments)
                 .ThenInclude(a => a.Team)
+            .Include(i => i.MediaAttachments) 
             .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
 
         if (incident == null)
@@ -42,7 +43,13 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
             Category = incident.Category,
             EmergencyCode = incident.EmergencyCode,
             Description = incident.Description,
-            MediaUrl = incident.MediaUrl,
+            MediaAttachments = incident.MediaAttachments.Select(m => new IncidentMediaDto
+            {
+                Id = m.Id,
+                MediaUrl = m.MediaUrl,
+                MediaType = m.MediaType,
+                CreatedAt = m.CreatedAt
+            }).ToList(),
             Status = incident.Status,
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,

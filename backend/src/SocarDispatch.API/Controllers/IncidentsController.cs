@@ -41,7 +41,7 @@ public class IncidentsController : ControllerBase
             request.Category,
             request.EmergencyCode,
             request.Description,
-            request.MediaUrl,
+            request.MediaAttachments,
             request.Latitude,
             request.Longitude
         );
@@ -81,7 +81,7 @@ public class IncidentsController : ControllerBase
             request.Category,
             request.EmergencyCode,
             request.Description,
-            request.MediaUrl,
+            request.MediaAttachments,
             request.Latitude,
             request.Longitude
         );
@@ -100,10 +100,4 @@ public class IncidentsController : ControllerBase
         var result = await _sender.Send(command);
         return Ok(result);
     }
-
-
-
-
-
-
 }

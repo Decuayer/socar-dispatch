@@ -30,12 +30,17 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
             Category = request.Category,
             EmergencyCode = request.EmergencyCode,
             Description = request.Description,
-            MediaUrl = request.MediaUrl,
             Status = "Open",
             Latitude = request.Latitude,
             Longitude = request.Longitude,
             Location = new Point((double)request.Longitude, (double)request.Latitude) { SRID = 4326 },
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            MediaAttachments = request.MediaAttachments.Select(m => new IncidentMedia
+            {
+                MediaUrl = m.MediaUrl,
+                MediaType = m.MediaType,
+                CreatedAt = DateTime.UtcNow
+            }).ToList()
         };
         _context.Incidents.Add(incident);
         await _context.SaveChangesAsync(cancellationToken);
@@ -47,11 +52,17 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
             Category = incident.Category,
             EmergencyCode = incident.EmergencyCode,
             Description = incident.Description,
-            MediaUrl = incident.MediaUrl,
             Status = incident.Status,
             Latitude = incident.Latitude,
             Longitude = incident.Longitude,
-            CreatedAt = incident.CreatedAt
+            CreatedAt = incident.CreatedAt,
+            MediaAttachments = incident.MediaAttachments.Select(m => new IncidentMediaDto
+            {
+                Id = m.Id,
+                MediaUrl = m.MediaUrl,
+                MediaType = m.MediaType,
+                CreatedAt = m.CreatedAt
+            }).ToList()
         };
         return ApiResponse<IncidentDto>.SuccessResult(dto, "Incident successfully reported.");
     }

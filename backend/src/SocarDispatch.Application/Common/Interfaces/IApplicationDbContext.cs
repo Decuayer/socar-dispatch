@@ -10,6 +10,7 @@ public interface IApplicationDbContext
     DbSet<TeamMember> TeamMembers { get; }
     DbSet<Incident> Incidents { get; }
     DbSet<Assignment> Assignments { get; }
+    DbSet<IncidentMedia> IncidentMedia { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

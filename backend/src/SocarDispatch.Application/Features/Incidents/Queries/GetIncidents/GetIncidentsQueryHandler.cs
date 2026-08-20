@@ -21,6 +21,7 @@ public class GetIncidentsQueryHandler : IRequestHandler<GetIncidentsQuery, ApiRe
             .Include(i => i.Reporter)
             .Include(i => i.Assignments)
                 .ThenInclude(a => a.Team)
+            .Include(i => i.MediaAttachments) 
             .AsNoTracking()
             .AsQueryable();
 
@@ -44,7 +45,13 @@ public class GetIncidentsQueryHandler : IRequestHandler<GetIncidentsQuery, ApiRe
                 Category = i.Category,
                 EmergencyCode = i.EmergencyCode,
                 Description = i.Description,
-                MediaUrl = i.MediaUrl,
+                MediaAttachments = i.MediaAttachments.Select(m => new IncidentMediaDto
+                {
+                    Id = m.Id,
+                    MediaUrl = m.MediaUrl,
+                    MediaType = m.MediaType,
+                    CreatedAt = m.CreatedAt
+                }).ToList(),
                 Status = i.Status,
                 Latitude = i.Latitude,
                 Longitude = i.Longitude,
