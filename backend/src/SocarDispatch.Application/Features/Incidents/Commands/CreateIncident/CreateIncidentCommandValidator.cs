@@ -26,5 +26,11 @@ public class CreateIncidentCommandValidator : AbstractValidator<CreateIncidentCo
             .InclusiveBetween(-180m, 180m)
             .WithMessage("Longitude must be between -180 and 180 degrees.");
 
+        // Media Attachments Validation
+        RuleForEach(x => x.MediaAttachments).ChildRules(media =>
+        {
+            media.RuleFor(m => m.MediaUrl)
+                .NotEmpty().WithMessage("MediaUrl cannot be empty.");
+        });
     }
 }

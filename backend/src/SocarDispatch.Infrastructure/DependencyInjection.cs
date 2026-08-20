@@ -6,6 +6,8 @@ using SocarDispatch.Infrastructure.Persistence;
 using SocarDispatch.Infrastructure.Services;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using SocarDispatch.Infrastructure.Settings;
+
 
 namespace SocarDispatch.Infrastructure;
 
@@ -28,6 +30,20 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+        
+        // MinIO Settings & Storage Service Registration
+        var minioSettings = new MinioSettings
+        {
+            Endpoint = configuration["MINIO_ENDPOINT"] ?? configuration["Minio:Endpoint"] ?? "localhost:9000",
+            AccessKey = configuration["MINIO_ROOT_USER"] ?? configuration["Minio:AccessKey"] ?? "minioadmin",
+            SecretKey = configuration["MINIO_ROOT_PASSWORD"] ?? configuration["Minio:SecretKey"] ?? "miniopassword",
+            BucketName = configuration["MINIO_DEFAULT_BUCKET"] ?? configuration["Minio:BucketName"] ?? "socar-dispatch-media",
+            UseSSL = bool.TryParse(configuration["MINIO_USE_SSL"], out var useSsl) && useSsl,
+            PublicEndpoint = configuration["MINIO_PUBLIC_ENDPOINT"] ?? configuration["Minio:PublicEndpoint"] ?? "http://localhost:9000"
+        };
+        services.AddSingleton(minioSettings);
+        services.AddScoped<IMediaStorageService, MinioStorageService>();
+
 
         // Firebase Admin Initialization & Push Notification Service Registration
         var credPath = configuration["Firebase:CredentialsPath"] ?? Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_PATH");
