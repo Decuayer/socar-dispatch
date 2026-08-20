@@ -8,4 +8,8 @@ public class TeamMemberDto
     public string Phone { get; set; } = string.Empty;
     public string Department { get; set; } = string.Empty;
     public string? SubRole { get; set; }
+
+    public string MemberStatus { get; set; } = "Available";
+    public DateTime? StatusUpdatedAt { get; set; }
+    public DateTime JoinedAt { get; set; }
 }

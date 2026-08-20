@@ -41,7 +41,10 @@ public class GetTeamsQueryHandler : IRequestHandler<GetTeamsQuery, ApiResponse<L
                 Email = m.User.Email,
                 Phone = m.User.Phone,
                 Department = m.User.Department,
-                SubRole = m.User.SubRole
+                SubRole = m.User.SubRole,
+                MemberStatus = m.MemberStatus.ToString(),
+                StatusUpdatedAt = m.StatusUpdatedAt,
+                JoinedAt = m.JoinedAt
             }).ToList()
         }).ToList();
 
