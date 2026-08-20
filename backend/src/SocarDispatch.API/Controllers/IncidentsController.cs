@@ -97,12 +97,18 @@ public class IncidentsController : ControllerBase
     }
 
     // PATCH /api/v1/incidents/{id}/status
-    // Changes the status of the incident (Open, Assigned, Resolved, Cancelled).
+    // Changes the status of the incident (Open, Assigned, Resolved, Canceled).
     [HttpPatch("{id:guid}/status")]
-    [Authorize(Roles = "Operator,Team")]
+    [Authorize]
     public async Task<ActionResult<ApiResponse<IncidentDto>>> ChangeStatus(Guid id, [FromBody] ChangeIncidentStatusRequestDto request)
     {
-        var command = new ChangeIncidentStatusCommand(id, request.Status);
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var requesterId))
+        {
+            throw new DomainException("Invalid user session. Token is missing or invalid.");
+        }
+        var userRoleClaim = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirstValue("role") ?? string.Empty;
+        var command = new ChangeIncidentStatusCommand(id, request.Status, requesterId, userRoleClaim);
         var result = await _sender.Send(command);
         return Ok(result);
     }
