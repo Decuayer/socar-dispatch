@@ -108,7 +108,7 @@ public class IncidentsController : ControllerBase
             throw new DomainException("Invalid user session. Token is missing or invalid.");
         }
         var userRoleClaim = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirstValue("role") ?? string.Empty;
-        var command = new ChangeIncidentStatusCommand(id, request.Status, requesterId, userRoleClaim);
+        var command = new ChangeIncidentStatusCommand(id, request.Status, requesterId, userRoleClaim, request.CompletionNotes);
         var result = await _sender.Send(command);
         return Ok(result);
     }

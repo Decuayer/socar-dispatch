@@ -16,4 +16,7 @@ public class Assignment
     public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? CompletedAt { get; set; }
+
+    public string? CompletionNotes { get; set; }
+
 }

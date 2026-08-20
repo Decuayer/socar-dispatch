@@ -9,4 +9,6 @@ public class AssignmentDto
     public Guid OperatorId { get; set; }
     public string OperatorFullName { get; set; } = string.Empty;
     public DateTime AssignedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public string? CompletionNotes { get; set; }
 }

@@ -112,7 +112,11 @@ public class ChangeIncidentStatusCommandHandler : IRequestHandler<ChangeIncident
             {
                 activeAssignment.Team.Status = TeamStatus.Idle;
                 activeAssignment.Team.UpdatedAt = DateTime.UtcNow;
-                activeAssignment.CompletedAt = DateTime.UtcNow; // SD-012: Kapanış zamanı yazılıyor
+                activeAssignment.CompletedAt = DateTime.UtcNow;
+                if (!string.IsNullOrWhiteSpace(request.CompletionNotes))
+                {
+                    activeAssignment.CompletionNotes = request.CompletionNotes;
+                }
             }
         }
 
