@@ -6,6 +6,8 @@ using SocarDispatch.Application.Features.Teams.Commands.UpdateTeamLocation;
 using SocarDispatch.Application.Features.Teams.Commands.UpdateTeamStatus;
 using SocarDispatch.Application.Features.Teams.DTOs;
 using SocarDispatch.Application.Features.Teams.Queries.GetTeams;
+using System.Security.Claims;
+using SocarDispatch.Domain.Exceptions;
 
 namespace SocarDispatch.API.Controllers;
 
@@ -31,13 +33,18 @@ public class TeamsController : ControllerBase
         return Ok(result);
     }
 
-    // PATCH /api/v1/teams/status
+    // PATCH /api/v1/teams/{teamId}/status
     // Updates the status of the emergency team (Idle, Forwarded, OnScene, Busy).
-    [HttpPatch("status")]
+    [HttpPatch("{teamId:guid}/status")]
     [Authorize(Roles = "Operator,Team")]
-    public async Task<ActionResult<ApiResponse<TeamDto>>> UpdateStatus([FromBody] UpdateTeamStatusRequestDto request)
+    public async Task<ActionResult<ApiResponse<TeamDto>>> UpdateStatus(Guid teamId, [FromBody] UpdateTeamStatusRequestDto request)
     {
-        var command = new UpdateTeamStatusCommand(request.TeamId, request.Status);
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var requesterId))
+        {
+            throw new DomainException("Invalid user session. Token is missing or invalid.");
+        }
+        var command = new UpdateTeamStatusCommand(teamId, requesterId, request.Status);
         var result = await _sender.Send(command);
         return Ok(result);
     }

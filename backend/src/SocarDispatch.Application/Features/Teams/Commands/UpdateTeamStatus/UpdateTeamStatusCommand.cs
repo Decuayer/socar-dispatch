@@ -4,4 +4,4 @@ using SocarDispatch.Application.Features.Teams.DTOs;
 
 namespace SocarDispatch.Application.Features.Teams.Commands.UpdateTeamStatus;
 
-public record UpdateTeamStatusCommand(Guid TeamId, string Status) : IRequest<ApiResponse<TeamDto>>;
+public record UpdateTeamStatusCommand(Guid TeamId, Guid RequesterId, string Status) : IRequest<ApiResponse<TeamDto>>;
