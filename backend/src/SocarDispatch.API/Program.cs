@@ -6,6 +6,7 @@ using Microsoft.OpenApi;
 using SocarDispatch.API.Middlewares;
 using SocarDispatch.Application;
 using SocarDispatch.Infrastructure;
+using SocarDispatch.Infrastructure.Hubs;
 using Swashbuckle.AspNetCore.Filters;
 
 // Installing .env
@@ -52,6 +53,33 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = ctx =>
+        {
+            var token = ctx.Request.Query["access_token"];
+            var path = ctx.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(token) &&
+                (path.StartsWithSegments("/hubs/incidents") ||
+                 path.StartsWithSegments("/hubs/location")))
+            {
+                ctx.Token = token;
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
 });
 
 builder.Services.AddAuthorization();
@@ -94,7 +122,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 // Sorting: Authentication -> Authorization
 app.UseAuthentication();
@@ -125,6 +155,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.MapHub<IncidentsHub>("/hubs/incidents");
+app.MapHub<LocationHub>("/hubs/location");
 
 app.MapControllers();
 

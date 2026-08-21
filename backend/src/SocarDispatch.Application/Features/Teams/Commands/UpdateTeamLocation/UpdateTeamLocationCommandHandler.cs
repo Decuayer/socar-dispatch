@@ -5,16 +5,19 @@ using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Application.Common.Models;
 using SocarDispatch.Application.Features.Teams.DTOs;
 using SocarDispatch.Domain.Exceptions;
+using SocarDispatch.Domain.Events;
 
 namespace SocarDispatch.Application.Features.Teams.Commands.UpdateTeamLocation;
 
 public class UpdateTeamLocationCommandHandler : IRequestHandler<UpdateTeamLocationCommand, ApiResponse<TeamDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IPublisher _publisher;
 
-    public UpdateTeamLocationCommandHandler(IApplicationDbContext context)
+    public UpdateTeamLocationCommandHandler(IApplicationDbContext context, IPublisher publisher)
     {
         _context = context;
+        _publisher = publisher;
     }
 
     public async Task<ApiResponse<TeamDto>> Handle(UpdateTeamLocationCommand request, CancellationToken cancellationToken)
@@ -35,6 +38,13 @@ public class UpdateTeamLocationCommandHandler : IRequestHandler<UpdateTeamLocati
         team.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _publisher.Publish(new TeamLocationUpdatedEvent(
+            team.Id,
+            (double)request.Latitude,
+            (double)request.Longitude,
+            team.UpdatedAt
+        ), cancellationToken);
 
         var dto = new TeamDto
         {

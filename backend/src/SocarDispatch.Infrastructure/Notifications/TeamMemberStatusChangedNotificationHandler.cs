@@ -1,47 +1,47 @@
 using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using SocarDispatch.Domain.Events;
+using SocarDispatch.Infrastructure.Hubs;
 
 namespace SocarDispatch.Infrastructure.Notifications;
 
-/// Notification handler executed when a TeamMemberStatusChangedEvent is raised.
-/// Logs the team member status change and provides the infrastructure for SDDC-15 / SignalR live operator map broadcasts.
 public class TeamMemberStatusChangedNotificationHandler : INotificationHandler<TeamMemberStatusChangedEvent>
 {
+    private readonly IHubContext<IncidentsHub> _hubContext;
     private readonly ILogger<TeamMemberStatusChangedNotificationHandler> _logger;
 
-    public TeamMemberStatusChangedNotificationHandler(ILogger<TeamMemberStatusChangedNotificationHandler> logger)
+    public TeamMemberStatusChangedNotificationHandler(
+        IHubContext<IncidentsHub> hubContext,
+        ILogger<TeamMemberStatusChangedNotificationHandler> logger)
     {
+        _hubContext = hubContext;
         _logger = logger;
     }
 
-    public Task Handle(TeamMemberStatusChangedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(TeamMemberStatusChangedEvent notification, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation(
-                "Team member status changed notification received. TeamId: {TeamId}, UserId: {UserId}, PreviousStatus: {PreviousStatus}, NewStatus: {NewStatus}, ChangedById: {ChangedById}, ChangedAt: {ChangedAt}",
-                notification.TeamId,
-                notification.UserId,
-                notification.PreviousStatus,
-                notification.NewStatus,
-                notification.ChangedById,
-                notification.ChangedAt
+                "Team member status changed. TeamId: {TeamId}, UserId: {UserId}, NewStatus: {NewStatus}",
+                notification.TeamId, notification.UserId, notification.NewStatus
             );
 
-            // SDDC-15 Link: Operatör haritası için SignalR Hub yayını (BroadcastTeamMemberStatusChanged)
-            // ve push bildirim entegrasyonu bu noktadan çağrılacaktır.
+            // SignalR Operator Broadcast
+            await _hubContext.Clients.Group("operators").SendAsync("MemberStatusChanged", new
+            {
+                teamId = notification.TeamId,
+                userId = notification.UserId,
+                previousStatus = notification.PreviousStatus.ToString(),
+                newStatus = notification.NewStatus.ToString(),
+                changedById = notification.ChangedById,
+                changedAt = notification.ChangedAt
+            }, cancellationToken);
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Error occurred while processing TeamMemberStatusChangedEvent for TeamId: {TeamId}, UserId: {UserId}",
-                notification.TeamId,
-                notification.UserId
-            );
+            _logger.LogError(ex, "Error in TeamMemberStatusChangedNotificationHandler for TeamId: {TeamId}", notification.TeamId);
         }
-
-        return Task.CompletedTask;
     }
 }
