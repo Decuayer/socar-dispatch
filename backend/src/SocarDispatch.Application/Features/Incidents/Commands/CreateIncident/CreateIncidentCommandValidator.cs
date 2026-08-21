@@ -4,15 +4,6 @@ namespace SocarDispatch.Application.Features.Incidents.Commands.CreateIncident;
 
 public class CreateIncidentCommandValidator : AbstractValidator<CreateIncidentCommand>
 {
-    private static readonly string[] AllowedCategories = 
-    {
-        "Fire",
-        "Medical",
-        "Security",
-        "Environmental",
-        "Chemical"
-    };
-
     public CreateIncidentCommandValidator()
     {
         RuleFor(x => x.ReporterId)
@@ -20,9 +11,7 @@ public class CreateIncidentCommandValidator : AbstractValidator<CreateIncidentCo
         
         RuleFor(x => x.Category)
             .NotEmpty().WithMessage("Incident category is required.")
-            .MaximumLength(50).WithMessage("Category cannot exceed 50 characters.")
-            .Must(c => AllowedCategories.Contains(c))
-            .WithMessage($"Invalid category. Allowed values: {string.Join(", ", AllowedCategories)}");
+            .MaximumLength(50).WithMessage("Category cannot exceed 50 characters.");
         
         RuleFor(x => x.EmergencyCode)
             .NotEmpty().WithMessage("Emergency code is required.")

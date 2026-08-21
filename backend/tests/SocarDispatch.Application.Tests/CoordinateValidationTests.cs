@@ -118,11 +118,8 @@ public class CoordinateValidationTests
     }
 
     [Theory]
-    [InlineData("Yangın")]
-    [InlineData("UnknownCategory")]
-    [InlineData("Invalid")]
     [InlineData("")]
-    public void CreateIncidentCommand_WithDisallowedCategory_ShouldFailValidation(string invalidCategory)
+    public void CreateIncidentCommand_WithEmptyCategory_ShouldFailValidation(string invalidCategory)
     {
         var command = new CreateIncidentCommand(
             ReporterId: Guid.NewGuid(),
