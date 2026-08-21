@@ -69,7 +69,7 @@ public class AssignmentAndStatusLogicTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Latitude = 40.99m,
             Longitude = 29.02m,
@@ -269,7 +269,7 @@ public class AssignmentAndStatusLogicTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Latitude = 40.0m,
             Longitude = 29.0m,

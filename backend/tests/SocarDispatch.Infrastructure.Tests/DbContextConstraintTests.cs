@@ -100,7 +100,7 @@ public class DbContextConstraintTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Latitude = 40.991234m,
             Longitude = 29.023456m,

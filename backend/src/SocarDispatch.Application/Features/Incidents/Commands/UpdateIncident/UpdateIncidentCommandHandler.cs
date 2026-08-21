@@ -39,6 +39,13 @@ public class UpdateIncidentCommandHandler : IRequestHandler<UpdateIncidentComman
             throw new ForbiddenAccessException("You do not have permission to update this incident.");
         }
 
+        var categoryExists = await _context.IncidentCategories
+            .AnyAsync(c => c.Code == request.Category && c.IsActive, cancellationToken);
+        if (!categoryExists)
+        {
+            throw new DomainException($"Invalid incident category: '{request.Category}'");
+        }
+
         incident.Category = request.Category;
         incident.EmergencyCode = request.EmergencyCode;
         incident.Description = request.Description;
