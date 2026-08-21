@@ -38,6 +38,13 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
             throw new DomainException($"Invalid emergency code: '{request.EmergencyCode}'");
         }
 
+        var categoryExists = await _context.IncidentCategories
+            .AnyAsync(c => c.Code == request.Category && c.IsActive, cancellationToken);
+        if (!categoryExists)
+        {
+            throw new DomainException($"Invalid incident category: '{request.Category}'");
+        }
+
         var incident = new Incident
         {
             ReporterId = request.ReporterId,

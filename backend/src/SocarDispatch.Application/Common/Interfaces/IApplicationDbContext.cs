@@ -13,6 +13,7 @@ public interface IApplicationDbContext
     DbSet<IncidentMedia> IncidentMedia { get; }
     DbSet<EmergencyCodeDefinition> EmergencyCodes { get; }
     DbSet<IncidentReport> IncidentReports { get; }
+    DbSet<IncidentCategory> IncidentCategories { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

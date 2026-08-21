@@ -41,7 +41,7 @@ public class DbContextRelationshipTests
         // Arrange
         using var context = TestDbContextFactory.Create();
         var leader = new User { FirstName = "Lider", LastName = "Kaptan", Email = "lider@socar.com", Phone = "+905009998877", PasswordHash = "p", Department = "D", RoleType = RoleType.Team };
-        var team = new Team { TeamName = "Yangın Müdahale" };
+        var team = new Team { TeamName = "Fire Müdahale" };
 
         context.Users.Add(leader);
         await context.SaveChangesAsync();
@@ -73,7 +73,7 @@ public class DbContextRelationshipTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Latitude = 40.99m,
             Longitude = 29.02m,

@@ -54,15 +54,15 @@ public class IncidentReportTests
         };
         context.Users.Add(operatorUser);
 
-        var team = new Team { TeamName = "Yangın Müdahale Ekibi 1", LeaderId = reporterUser.Id, Status = TeamStatus.Forwarded };
+        var team = new Team { TeamName = "Fire Müdahale Ekibi 1", LeaderId = reporterUser.Id, Status = TeamStatus.Forwarded };
         context.Teams.Add(team);
 
         var incident = new Incident
         {
             ReporterId = reporterUser.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "RED-1",
-            Description = "A Blok Yangın",
+            Description = "A Blok Fire",
             Status = IncidentStatus.Assigned,
             Latitude = 40.4093m,
             Longitude = 49.8671m,
@@ -92,7 +92,7 @@ public class IncidentReportTests
         result.Should().NotBeNull();
         result.Data.Content.Should().Be("Saha müdahalesi başladı. Alevler kontrol altına alınıyor.");
         result.Data.MediaUrl.Should().Be("https://minio.socar.az/reports/photo1.jpg");
-        result.Data.TeamName.Should().Be("Yangın Müdahale Ekibi 1");
+        result.Data.TeamName.Should().Be("Fire Müdahale Ekibi 1");
         result.Data.ReportedByFullName.Should().Be("Ali Kaya");
     }
 

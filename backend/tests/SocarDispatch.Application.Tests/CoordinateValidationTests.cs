@@ -17,9 +17,9 @@ public class CoordinateValidationTests
         // Arrange (İstanbul/Kocaeli civarı geçerli koordinatlar)
         var command = new CreateIncidentCommand(
             ReporterId: Guid.NewGuid(),
-            Category: "Yangın",
+            Category: "Fire",
             EmergencyCode: "Kırmızı Kod",
-            Description: "A Blok yangın",
+            Description: "A Blok Fire",
             MediaAttachments: new(),
             Latitude: 40.991234m,
             Longitude: 29.023456m
@@ -59,7 +59,7 @@ public class CoordinateValidationTests
         // Arrange
         var command = new CreateIncidentCommand(
             ReporterId: Guid.NewGuid(),
-            Category: "Gaz Sızıntısı",
+            Category: "Fire",
             EmergencyCode: "Sarı Kod",
             Description: "Tesis gaz kokusu",
             MediaAttachments: new(),
@@ -93,6 +93,53 @@ public class CoordinateValidationTests
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(command.Longitude));
     }
+
+    [Theory]
+    [InlineData("Fire")]
+    [InlineData("Medical")]
+    [InlineData("Security")]
+    [InlineData("Environmental")]
+    [InlineData("Chemical")]
+    public void CreateIncidentCommand_WithAllowedCategory_ShouldPassValidation(string category)
+    {
+        var command = new CreateIncidentCommand(
+            ReporterId: Guid.NewGuid(),
+            Category: category,
+            EmergencyCode: "Red",
+            Description: "Test incident",
+            MediaAttachments: new(),
+            Latitude: 40.0m,
+            Longitude: 29.0m
+        );
+
+        var result = _incidentValidator.Validate(command);
+
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("Yangın")]
+    [InlineData("UnknownCategory")]
+    [InlineData("Invalid")]
+    [InlineData("")]
+    public void CreateIncidentCommand_WithDisallowedCategory_ShouldFailValidation(string invalidCategory)
+    {
+        var command = new CreateIncidentCommand(
+            ReporterId: Guid.NewGuid(),
+            Category: invalidCategory,
+            EmergencyCode: "Red",
+            Description: "Test incident",
+            MediaAttachments: new(),
+            Latitude: 40.0m,
+            Longitude: 29.0m
+        );
+
+        var result = _incidentValidator.Validate(command);
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(command.Category));
+    }
+
 
 }
 

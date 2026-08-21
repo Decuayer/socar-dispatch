@@ -45,7 +45,7 @@ public class UpdateIncidentAuthorizationTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Description = "Eski Açıklama",
             Latitude = 40.99m,
@@ -60,7 +60,7 @@ public class UpdateIncidentAuthorizationTests
         var command = new UpdateIncidentCommand(
             incident.Id,
             reporter.Id, // Requester = Reporter
-            "Gaz Sızıntısı",
+            "Fire",
             "Sarı Kod",
             "Güncellenmiş Açıklama",
             new List<CreateIncidentMediaRequestDto>(),
@@ -73,11 +73,11 @@ public class UpdateIncidentAuthorizationTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Category.Should().Be("Gaz Sızıntısı");
+        result.Data.Category.Should().Be("Fire");
         result.Data.Description.Should().Be("Güncellenmiş Açıklama");
 
         var updated = await context.Incidents.FindAsync(incident.Id);
-        updated!.Category.Should().Be("Gaz Sızıntısı");
+        updated!.Category.Should().Be("Fire");
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class UpdateIncidentAuthorizationTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Description = "Orijinal Açıklama",
             Latitude = 40.99m,
@@ -129,20 +129,18 @@ public class UpdateIncidentAuthorizationTests
         var command = new UpdateIncidentCommand(
             incident.Id,
             operatorUser.Id, // Requester = Operator (Reporter değil)
-            "Sabotaj",
+            "Security",
             "Siyah Kod",
             "Operator Güncelledi",
             new List<CreateIncidentMediaRequestDto>(),
             40.99m,
             29.02m
         );
-
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
-
         // Assert
         result.Should().NotBeNull();
-        result.Data.Category.Should().Be("Sabotaj");
+        result.Data.Category.Should().Be("Security");
     }
 
     [Fact]
@@ -179,7 +177,7 @@ public class UpdateIncidentAuthorizationTests
         var incident = new Incident
         {
             ReporterId = reporter.Id,
-            Category = "Yangın",
+            Category = "Fire",
             EmergencyCode = "Kırmızı Kod",
             Latitude = 40.99m,
             Longitude = 29.02m,

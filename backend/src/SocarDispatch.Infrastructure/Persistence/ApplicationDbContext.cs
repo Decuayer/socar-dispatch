@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<IncidentMedia> IncidentMedia => Set<IncidentMedia>();
     public DbSet<EmergencyCodeDefinition> EmergencyCodes => Set<EmergencyCodeDefinition>();
     public DbSet<IncidentReport> IncidentReports => Set<IncidentReport>();
+    public DbSet<IncidentCategory> IncidentCategories => Set<IncidentCategory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

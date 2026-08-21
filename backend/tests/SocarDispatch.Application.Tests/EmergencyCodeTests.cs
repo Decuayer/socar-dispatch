@@ -48,9 +48,9 @@ public class EmergencyCodeTests
         var handler = new CreateIncidentCommandHandler(context, publisherMock.Object);
         var command = new CreateIncidentCommand(
             ReporterId: reporter.Id,
-            Category: "Yangın",
+            Category: "Fire",
             EmergencyCode: "GeçersizKod",
-            Description: "A Blok yangın",
+            Description: "A Blok Fire",
             MediaAttachments: new(),
             Latitude: 40.0m,
             Longitude: 29.0m

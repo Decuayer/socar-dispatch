@@ -106,7 +106,7 @@ public class TeamCrudTests
     {
         // Arrange
         using var context = CreateInMemoryDbContext();
-        var team = new Team { TeamName = "Yangın Müdahale Ekibi", Status = TeamStatus.Idle };
+        var team = new Team { TeamName = "Fire Müdahale Ekibi", Status = TeamStatus.Idle };
         context.Teams.Add(team);
         await context.SaveChangesAsync();
 
@@ -118,7 +118,7 @@ public class TeamCrudTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.TeamName.Should().Be("Yangın Müdahale Ekibi");
+        result.Data.TeamName.Should().Be("Fire Müdahale Ekibi");
     }
 
     [Fact]
