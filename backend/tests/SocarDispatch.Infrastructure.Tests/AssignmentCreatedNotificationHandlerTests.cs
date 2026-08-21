@@ -6,7 +6,9 @@ using SocarDispatch.Domain.Entities;
 using SocarDispatch.Domain.Events;
 using SocarDispatch.Infrastructure.Notifications;
 using SocarDispatch.Domain.Enums;
-
+using Moq;
+using Microsoft.AspNetCore.SignalR;
+using SocarDispatch.Infrastructure.Hubs;
 
 namespace SocarDispatch.Infrastructure.Tests;
 
@@ -43,8 +45,14 @@ public class AssignmentCreatedNotificationHandlerTests
         using var context = TestDbContextFactory.Create();
         var fakePushService = new FakePushNotificationService();
         var logger = NullLogger<AssignmentCreatedNotificationHandler>.Instance;
-        var handler = new AssignmentCreatedNotificationHandler(context, fakePushService, logger);
+        var hubContextMock = new Mock<IHubContext<IncidentsHub>>();
+        var clientsMock = new Mock<IHubClients>();
+        var clientProxyMock = new Mock<IClientProxy>();
+        clientsMock.Setup(c => c.All).Returns(clientProxyMock.Object);
+        hubContextMock.Setup(h => h.Clients).Returns(clientsMock.Object);
+        var handler = new AssignmentCreatedNotificationHandler(context, fakePushService, hubContextMock.Object, logger);
 
+        
         // 1. Kullanıcılar ve Ekip Üyeleri Hazırla
         var userWithToken1 = new User
         {

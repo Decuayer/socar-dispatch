@@ -7,16 +7,19 @@ using SocarDispatch.Application.Features.Incidents.DTOs;
 using SocarDispatch.Domain.Entities;
 using SocarDispatch.Domain.Enums;
 using SocarDispatch.Domain.Exceptions;
+using SocarDispatch.Domain.Events;
+
 
 namespace SocarDispatch.Application.Features.Incidents.Commands.CreateIncident;
 
 public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentCommand, ApiResponse<IncidentDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IPublisher _publisher;
 
-    public CreateIncidentCommandHandler(IApplicationDbContext context)
-    {
+    public CreateIncidentCommandHandler(IApplicationDbContext context, IPublisher publisher)    {
         _context = context;
+        _publisher = publisher;
     }
 
     public async Task<ApiResponse<IncidentDto>> Handle(CreateIncidentCommand request, CancellationToken cancellationToken)
@@ -56,6 +59,17 @@ public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentComman
 
         _context.Incidents.Add(incident);
         await _context.SaveChangesAsync(cancellationToken);
+
+        await _publisher.Publish(new IncidentCreatedEvent(
+            incident.Id,
+            incident.ReporterId,
+            incident.Category,
+            incident.EmergencyCode,
+            incident.Description ?? string.Empty,
+            (double)incident.Latitude,
+            (double)incident.Longitude,
+            incident.CreatedAt
+        ), cancellationToken);
 
         var dto = new IncidentDto
         {

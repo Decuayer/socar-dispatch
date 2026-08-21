@@ -82,6 +82,15 @@ public class CreateAssignmentCommandHandler : IRequestHandler<CreateAssignmentCo
             assignment.AssignedAt
         ), cancellationToken);
 
+        await _publisher.Publish(new TeamDispatchedEvent(
+            assignment.Id,
+            assignment.IncidentId,
+            assignment.TeamId,
+            team.TeamName,
+            assignment.OperatorId,
+            assignment.AssignedAt
+        ), cancellationToken);
+
         var dto = new AssignmentDto
         {
             Id = assignment.Id,

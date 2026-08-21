@@ -9,6 +9,8 @@ using SocarDispatch.Domain.Entities;
 using SocarDispatch.Domain.Exceptions;
 using SocarDispatch.Infrastructure.Persistence;
 using Xunit;
+using MediatR;
+using Moq;
 
 namespace SocarDispatch.Application.Tests;
 
@@ -42,7 +44,8 @@ public class EmergencyCodeTests
         context.Users.Add(reporter);
         await context.SaveChangesAsync();
 
-        var handler = new CreateIncidentCommandHandler(context);
+        var publisherMock = new Mock<IPublisher>();
+        var handler = new CreateIncidentCommandHandler(context, publisherMock.Object);
         var command = new CreateIncidentCommand(
             ReporterId: reporter.Id,
             Category: "Yangın",

@@ -1,9 +1,11 @@
 using System.Globalization;
 using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocarDispatch.Application.Common.Interfaces;
 using SocarDispatch.Domain.Events;
+using SocarDispatch.Infrastructure.Hubs;
 
 namespace SocarDispatch.Infrastructure.Notifications;
 
@@ -11,15 +13,18 @@ public class AssignmentCreatedNotificationHandler : INotificationHandler<Assignm
 {
     private readonly IApplicationDbContext _context;
     private readonly IPushNotificationService _pushService;
+    private readonly IHubContext<IncidentsHub> _hubContext; // <-- EKLE
     private readonly ILogger<AssignmentCreatedNotificationHandler> _logger;
 
     public AssignmentCreatedNotificationHandler(
         IApplicationDbContext context,
         IPushNotificationService pushService,
+        IHubContext<IncidentsHub> hubContext, // <-- EKLE
         ILogger<AssignmentCreatedNotificationHandler> logger)
     {
         _context = context;
         _pushService = pushService;
+        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -27,7 +32,17 @@ public class AssignmentCreatedNotificationHandler : INotificationHandler<Assignm
     {
         try
         {
-            // 1. Select the members of the assigned team who own the device token.
+            // 1. SignalR Real-Time TeamDispatched Broadcast
+            await _hubContext.Clients.All.SendAsync("TeamDispatched", new
+            {
+                assignmentId = notification.AssignmentId,
+                incidentId = notification.IncidentId,
+                teamId = notification.TeamId,
+                operatorId = notification.OperatorId,
+                assignedAt = notification.AssignedAt
+            }, cancellationToken);
+
+            // 2. FCM Push Notification (Mevcut mantık)
             var teamMembers = await _context.TeamMembers
                 .Include(tm => tm.User)
                 .Where(tm => tm.TeamId == notification.TeamId && tm.User.DeviceToken != null)
@@ -39,24 +54,14 @@ public class AssignmentCreatedNotificationHandler : INotificationHandler<Assignm
                 .Distinct()
                 .ToList();
 
-            if (!tokens.Any())
-            {
-                _logger.LogInformation("No device tokens found for team members of TeamId: {TeamId}", notification.TeamId);
-                return;
-            }
+            if (!tokens.Any()) return;
 
-            // 2. Query incident details from the database
             var incident = await _context.Incidents
                 .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.Id == notification.IncidentId, cancellationToken);
 
-            if (incident == null)
-            {
-                _logger.LogWarning("Incident with ID {IncidentId} not found while preparing push notification.", notification.IncidentId);
-                return;
-            }
+            if (incident == null) return;
 
-            // 3. Prepare high-priority payload data
             var data = new Dictionary<string, string>
             {
                 { "incidentId", notification.IncidentId.ToString() },
@@ -67,7 +72,6 @@ public class AssignmentCreatedNotificationHandler : INotificationHandler<Assignm
                 { "type", "DISPATCH_ALERT" }
             };
 
-            // 4. Sending push notifications
             await _pushService.SendMulticastAsync(
                 tokens,
                 title: $"Acil Durum Atandı — {incident.EmergencyCode}",

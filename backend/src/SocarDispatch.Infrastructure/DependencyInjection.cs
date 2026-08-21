@@ -65,6 +65,8 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
         });
 
+        services.AddSignalR();
+
         return services;
     }
 }
